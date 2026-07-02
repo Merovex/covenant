@@ -1,0 +1,7 @@
+/*
+ * u-full-width — stretch an element to fill its container's inline size. Handy
+ * for making a button or control span the full width of a form or card.
+ */
+@layer utilities {
+  .u-full-width { inline-size: 100%; }
+}

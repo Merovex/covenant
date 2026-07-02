@@ -1,24 +1,24 @@
 class SessionsController < ApplicationController
+  layout "auth"
+
   allow_unauthenticated_access only: %i[new create verify]
 
   # Throttle magic-link requests to blunt enumeration/spam of the mailer.
   rate_limit to: 10, within: 3.minutes, only: :create,
     with: -> { redirect_to new_session_path, alert: "Too many attempts. Try again later." }
 
-  # Sign-in form: ask for an email address.
+  # Sign-in form: ask for an email address. On a fresh install (no users yet)
+  # there's nothing to sign in to — send the first visitor to setup instead.
   def new
+    redirect_to new_setup_path if User.none?
   end
 
-  # Email a magic link. Always report success so we don't leak which addresses
-  # have accounts. A user is created on first sign in (open registration).
+  # Email a sign-in magic link to an existing user. Always reports success so we
+  # don't leak which addresses have accounts. Registration happens elsewhere
+  # (SetupsController / SignupsController), never here.
   def create
     if params[:email_address].present?
-      user = User.find_or_create_by(email_address: params[:email_address])
-      if user.persisted?
-        code, plaintext = SignInCode.generate_for(user)
-        code.save!
-        SessionMailer.magic_link(user, plaintext).deliver_later
-      end
+      User.with_email_address(params[:email_address])&.send_magic_link(for: :sign_in)
     end
 
     redirect_to new_session_path(sent: true)

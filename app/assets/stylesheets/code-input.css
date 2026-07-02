@@ -1,0 +1,46 @@
+/*
+ * .code-input — segmented one-time code entry: eight single-character boxes in a
+ * row, split 4 + 4 by a dash, with large mono glyphs. Backed by a hidden field;
+ * behaviour lives in controllers/code_field_controller.js.
+ */
+@layer components {
+  .code-input {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.25rem, 1.5vw, 0.5rem);
+  }
+
+  .code-input__box {
+    /* Flex to share the row so eight boxes never overrun the panel; the max
+       keeps them from ballooning on wide screens. */
+    flex: 1 1 0;
+    min-inline-size: 0;
+    max-inline-size: 2.75rem;
+    block-size: clamp(2.5rem, 11vw, 3.25rem);
+    padding: 0;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-4);
+    font-weight: var(--font-weight-6);
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--canvas);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-ui);
+    transition: border-color 0.12s var(--ease-3), box-shadow 0.12s var(--ease-3);
+  }
+
+  .code-input__box:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 var(--border-size-2) var(--accent-soft);
+  }
+
+  /* the dash standing in for the ABCD-EFGH hyphen between the two groups */
+  .code-input__sep {
+    color: var(--ink-muted);
+    font-size: var(--font-size-4);
+    user-select: none;
+  }
+}

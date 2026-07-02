@@ -14,6 +14,11 @@ Rails.application.routes.draw do
   # Redeems the emailed code — hit by the magic link and the manual entry form.
   get "session/verify" => "sessions#verify", as: :verify_session
 
+  # First-run install setup (first user → domain admin); only when no users exist.
+  resource :setup, only: %i[new create]
+  # Open self-registration; only when the registration policy is :open.
+  resource :signup, only: %i[new create]
+
   # Living styleguide for building/eyeballing standard elements + components.
   get "theme" => "static#theme", as: :theme
   # Composition demos: a list-view (perma-header + list) and an item-view (editable header).

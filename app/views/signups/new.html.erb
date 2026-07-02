@@ -1,0 +1,18 @@
+<% content_for :title, "Sign up" %>
+
+<div class="card auth__card">
+  <header class="card__header"><span class="card__title">Create your account</span></header>
+  <div class="card__body u-stack">
+    <p class="u-text-muted">Enter your email and we'll send you a magic link to finish signing up — no password needed.</p>
+
+    <%= render "shared/error_summary", model: @signup %>
+
+    <%= form_with model: @signup, url: signup_path, class: "field" do |f| %>
+      <%= f.label :email_address, "Email", class: "field__label" %>
+      <%= f.email_field :email_address, class: "field__control", placeholder: "you@example.com", required: true, autofocus: true, autocomplete: "email" %>
+      <%= f.submit "Sign up", class: "button button--primary u-full-width", style: "margin-block-start: var(--u-pad);" %>
+    <% end %>
+
+    <%= link_to "Already have an account? Sign in", new_session_path, class: "u-text-muted" %>
+  </div>
+</div>

@@ -8,16 +8,37 @@ class AuthenticationFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "full magic-link sign in, then sign out" do
-    # Request a link for a brand-new address (open registration).
+  test "sign-in screen uses the centered auth layout, not the app canvas" do
+    get new_session_path
+    assert_response :success
+    assert_select "main.auth"
+    assert_select "header.app-header", false
+    assert_select "main.canvas", false
+  end
+
+  test "check-your-email state renders the segmented eight-box code input" do
+    get new_session_path(sent: true)
+    assert_response :success
+    assert_select ".code-input[data-controller=?]", "code-field"
+    assert_select ".code-input input.code-input__box", 8
+    assert_select ".code-input input[type=hidden][name=code][data-code-field-target=hidden]"
+    assert_select ".code-input__sep", 1                         # single 4+4 divider
+    assert_select "input.code-input__box[autofocus]", 1          # only the first box
+    assert_select "input.code-input__box[data-action*=?]", "code-field#onPaste"
+  end
+
+  test "an existing user completes magic-link sign in, then signs out" do
+    alice = users(:alice)
+
+    # Sign-in never registers — alice already exists.
     email = perform_enqueued_jobs do
-      assert_difference "User.count", 1 do
-        post session_path, params: { email_address: "newcomer@example.com" }
+      assert_no_difference "User.count" do
+        post session_path, params: { email_address: alice.email_address }
       end
       ActionMailer::Base.deliveries.last
     end
     assert_redirected_to new_session_path(sent: true)
-    assert_equal ["newcomer@example.com"], email.to
+    assert_equal [ alice.email_address ], email.to
 
     # Recover the plaintext code from the emailed link (only place it exists).
     plaintext = email.body.encoded[/code=([A-Z]{8})/, 1]
@@ -31,12 +52,22 @@ class AuthenticationFlowTest < ActionDispatch::IntegrationTest
     # The authenticated header renders (avatar initials + sign-out control).
     follow_redirect!
     assert_response :success
-    assert_select "button.avatar", text: "NE"
+    assert_select "button.avatar", text: "AE"
 
     # Sign out.
     delete session_path
     assert_redirected_to new_session_path
     assert_equal 0, Session.count
+  end
+
+  test "sign-in for an unknown address: no account, no email, and no leak" do
+    assert_no_difference [ "User.count", "SignInCode.count" ] do
+      assert_no_enqueued_emails do
+        post session_path, params: { email_address: "stranger@example.com" }
+      end
+    end
+    # Still reports success so we don't reveal who does/doesn't have an account.
+    assert_redirected_to new_session_path(sent: true)
   end
 
   test "invalid code does not sign in" do

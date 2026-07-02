@@ -1,0 +1,20 @@
+/*
+ * .auth — full-viewport shell for sign in / sign up. No app header or canvas;
+ * just the auth card centered horizontally and vertically on the tinted page.
+ */
+@layer components {
+  .auth {
+    min-block-size: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: calc(var(--u-pad) * 1.5);
+    box-sizing: border-box;
+  }
+
+  /* The auth card takes a comfortable, capped measure on any screen — wide
+     enough to seat the eight-box code input on one line. */
+  .auth__card {
+    inline-size: 100%;
+    max-inline-size: 28rem;
+  }
+}
