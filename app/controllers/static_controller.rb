@@ -1,4 +1,7 @@
 class StaticController < ApplicationController
+  # Styleguide/demo pages are public dev references — no sign in required.
+  allow_unauthenticated_access
+
   # Living styleguide. Renders every standard element/component so we can build
   # and eyeball HTML + CSS in isolation. See app/views/static/theme.html.erb.
   def theme

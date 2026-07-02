@@ -1,0 +1,11 @@
+<p>Hi<%= " #{@user.name}" if @user.name.present? %>,</p>
+
+<p>Use this link to sign in to Alcovo:</p>
+
+<p><%= link_to "Sign in to Alcovo", @verify_url %></p>
+
+<p>Or enter this code manually:</p>
+
+<p style="font-size: 24px; font-weight: bold; letter-spacing: 2px;"><%= @formatted_code %></p>
+
+<p>This link and code expire in 15 minutes and can only be used once. If you didn't request it, you can ignore this email.</p>

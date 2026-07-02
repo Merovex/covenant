@@ -1,0 +1,32 @@
+<% content_for :title, "Sign in" %>
+
+<div class="u-center" style="min-block-size: 60vh;">
+  <div class="card" style="inline-size: 100%; max-inline-size: 26rem;">
+    <% if params[:sent] %>
+      <header class="card__header"><span class="card__title">Check your email</span></header>
+      <div class="card__body u-stack">
+        <p class="u-text-muted">If that address has an account, we've sent a sign-in link. Open it on this device, or enter the code from the email below.</p>
+
+        <%= form_with url: verify_session_path, method: :get, class: "field" do |f| %>
+          <%= f.label :code, "Sign-in code", class: "field__label" %>
+          <%= f.text_field :code, class: "field__control", placeholder: "ABCD-EFGH", autocomplete: "one-time-code", autofocus: true, spellcheck: false %>
+          <span class="field__hint">Eight letters, e.g. ABCD-EFGH.</span>
+          <%= f.submit "Sign in", class: "button button--primary", style: "margin-block-start: var(--u-pad);" %>
+        <% end %>
+
+        <%= link_to "Use a different email", new_session_path, class: "u-text-muted" %>
+      </div>
+    <% else %>
+      <header class="card__header"><span class="card__title">Sign in to Alcovo</span></header>
+      <div class="card__body u-stack">
+        <p class="u-text-muted">Enter your email and we'll send you a magic link — no password needed.</p>
+
+        <%= form_with url: session_path, method: :post, class: "field" do |f| %>
+          <%= f.label :email_address, "Email", class: "field__label" %>
+          <%= f.email_field :email_address, class: "field__control", placeholder: "you@example.com", required: true, autofocus: true, autocomplete: "email" %>
+          <%= f.submit "Send magic link", class: "button button--primary", style: "margin-block-start: var(--u-pad);" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

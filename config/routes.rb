@@ -9,6 +9,11 @@ Rails.application.routes.draw do
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  # Passwordless (magic-link) authentication.
+  resource :session, only: %i[new create destroy]
+  # Redeems the emailed code — hit by the magic link and the manual entry form.
+  get "session/verify" => "sessions#verify", as: :verify_session
+
   # Living styleguide for building/eyeballing standard elements + components.
   get "theme" => "static#theme", as: :theme
   # Composition demos: a list-view (perma-header + list) and an item-view (editable header).

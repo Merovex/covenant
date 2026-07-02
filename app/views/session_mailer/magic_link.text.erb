@@ -1,0 +1,11 @@
+Hi<%= " #{@user.name}" if @user.name.present? %>,
+
+Use this link to sign in to Alcovo:
+
+<%= @verify_url %>
+
+Or enter this code manually:
+
+<%= @formatted_code %>
+
+This link and code expire in 15 minutes and can only be used once. If you didn't request it, you can ignore this email.

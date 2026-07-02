@@ -4,11 +4,12 @@
   <%= link_to "Alcovo", root_path, class: "bar__brand" %>
   <div class="bar__spacer"></div>
 
+  <% if authenticated? %>
   <button type="button" class="button button--icon button--ghost" aria-label="Notifications">
     <%= inline_svg_tag "lucide/bell.svg", class: "lucide", size: "20px" %>
   </button>
 
-  <button type="button" class="avatar" popovertarget="user-menu" aria-haspopup="menu" aria-label="Account menu">AL</button>
+  <button type="button" class="avatar" popovertarget="user-menu" aria-haspopup="menu" aria-label="Account menu"><%= avatar_initials(Current.user) %></button>
 
   <div class="menu menu--user" popover id="user-menu" role="menu">
     <button type="button" class="menu__item" role="menuitem">My Profile</button>
@@ -29,6 +30,9 @@
         <span data-tint-target="label">Zinc</span>
       </button>
     </div>
-    <button type="button" class="menu__item" role="menuitem">Sign out</button>
+    <%= button_to "Sign out", session_path, method: :delete, class: "menu__item", role: "menuitem" %>
   </div>
+  <% else %>
+  <%= link_to "Sign in", new_session_path, class: "button button--ghost" %>
+  <% end %>
 </header>
