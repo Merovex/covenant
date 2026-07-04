@@ -1,10 +1,13 @@
 /*
- * Chat — the single room. Lines reuse the comment row anatomy (.list__item
- * .comment from comment.css); only the composer is chat's own: a one-line
- * say-box pinned under the transcript.
+ * Chat — the single room, styled like a messages app (Signal/iMessage): no
+ * list dividers; each line is an avatar beside a card-like bubble, and your
+ * own lines mirror to the right in the accent tint. The composer is a
+ * one-line say-box (a textarea — Enter sends, Ctrl+Enter breaks the line;
+ * see chat_composer_controller.js) pinned under the transcript.
  *
- * Structure: .chat > .list (chat line rows) + form.chat__composer >
- *   input.chat__input + button
+ * Structure: .chat > .chat__transcript > turbo-frame.chat__line[--own] >
+ *   .avatar + .chat__content (.byline + .chat__message (.chat__bubble +
+ *   .chat__actions) + boosts) — then form.chat__composer > textarea.chat__input
  */
 @layer components {
   .chat {
@@ -13,9 +16,70 @@
     margin-block-start: var(--size-7);
   }
 
-  .chat__composer {
+  .chat__transcript {
+    display: grid;
+    gap: var(--u-pad);
+  }
+
+  .chat__line {
+    display: flex;
+    align-items: flex-start;
+    gap: calc(var(--u-pad) / 2);
+  }
+  /* Yours mirror: avatar and bubble on the right, actions trailing left. */
+  .chat__line--own { flex-direction: row-reverse; }
+
+  .chat__content {
+    display: grid;
+    gap: calc(var(--u-pad) / 4);
+    min-inline-size: 0;
+    max-inline-size: 65ch;
+  }
+  .chat__line--own .chat__content { justify-items: end; }
+
+  /* The bubble: a small card — solid surface, soft shadow, big corners,
+     the one nearest the avatar tucked in for the speech-tail feel. */
+  .chat__bubble {
+    min-inline-size: 0; /* may shrink below the text's preferred width… */
+    overflow-wrap: anywhere; /* …because even unbroken walls of text wrap */
+    padding: calc(var(--u-pad) / 2) var(--u-pad);
+    background: var(--canvas);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-3);
+    border-start-start-radius: var(--radius-1);
+    box-shadow: var(--shadow-1);
+  }
+  .chat__line--own .chat__bubble {
+    background: var(--accent-soft);
+    color: var(--ink-on-soft);
+    border-color: transparent;
+    border-start-start-radius: var(--radius-3);
+    border-start-end-radius: var(--radius-1);
+  }
+
+  /* Bubble + dots side by side, dots centered on the bubble's height. */
+  .chat__message {
     display: flex;
     align-items: center;
+    gap: calc(var(--u-pad) / 4);
+    min-inline-size: 0;
+  }
+  /* Yours mirror here too: dots on the inner (left) side of the bubble. */
+  .chat__line--own .chat__message { flex-direction: row-reverse; }
+
+  /* The dots never yield to a wide bubble — a full-width message must wrap
+     around them, not push them out of the row. */
+  .chat__actions { flex: none; }
+
+  /* Inline edit: editor above compact actions (mirrors .comment__form). */
+  .chat__form {
+    display: grid;
+    gap: calc(var(--u-pad) / 2);
+  }
+
+  .chat__composer {
+    display: flex;
+    align-items: start;
     gap: calc(var(--u-pad) / 2);
   }
 
@@ -25,10 +89,14 @@
     padding-block: calc(var(--u-pad) / 3);
     padding-inline: calc(var(--u-pad) / 1.5);
     border: var(--border-size-1) solid var(--line);
-    border-radius: var(--radius-round);
+    border-radius: var(--radius-ui); /* same roundness as every other field */
     background: var(--canvas);
     color: var(--ink);
+    font: inherit; /* textareas default to monospace */
     font-size: var(--font-size-1);
+    resize: none;
+    field-sizing: content; /* grow with the message where supported */
+    max-block-size: 10rem;
   }
   .chat__input:focus { outline: none; border-color: var(--accent); }
 }

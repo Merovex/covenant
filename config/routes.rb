@@ -51,7 +51,7 @@ Rails.application.routes.draw do
   # resource with no id. Lines are recordables; their member actions are
   # shallow on the Record id like everything else.
   resource :chatroom, only: :show
-  resources :chat_lines, only: %i[create destroy]
+  resources :chat_lines, only: %i[create edit update destroy]
 
   # Boosts — tiny appreciations pinned to any record (:record_id is the
   # Record id, so one route serves posts, comments, and future recordables).

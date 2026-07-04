@@ -7,13 +7,17 @@
 </header>
 
 <section class="chat" aria-label="Chatroom">
-  <div class="list">
+  <div class="chat__transcript">
     <%= render partial: "chat_lines/chat_line", collection: @chat_lines %>
   </div>
 
+  <%# Enter sends, Ctrl+Enter is a newline (chat-composer); a reply arrives %>
+  <%# with the quoted line prefilled. %>
   <%= form_with url: chat_lines_path, scope: :chat_line, class: "chat__composer" do |f| %>
-    <%= f.text_field :content, placeholder: "Say something…", autocomplete: "off",
-          class: "chat__input", aria: { label: "Say something" } %>
+    <%= f.text_area :content, value: @composer_text, rows: 1, placeholder: "Say something…",
+          autocomplete: "off", autofocus: @composer_text.present?, class: "chat__input",
+          aria: { label: "Say something" },
+          data: { controller: "chat-composer", action: "keydown.enter->chat-composer#send" } %>
     <%= f.submit "Say", class: "button button--primary" %>
   <% end %>
 </section>
