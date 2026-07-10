@@ -1,7 +1,15 @@
 <%# App header — brand left; notifications + user menu top-right. %>
 <%# .app-header is hidden under Hotwire Native (native nav takes over). %>
 <header class="bar app-header">
-  <%= link_to "Alcovo", root_path, class: "bar__brand" %>
+  <%= link_to root_path, class: "app-header__home", aria: { label: "Home" } do %>
+    <%= inline_svg_tag "lucide/house.svg", class: "lucide", size: "20px" %>
+  <% end %>
+  <button type="button" class="bar__brand app-menu-trigger" popovertarget="app-menu"
+          aria-haspopup="dialog" aria-label="Open menu">
+    Alcovo
+    <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide app-menu-trigger__chevron", size: "16px" %>
+  </button>
+  <%= render "layouts/app_menu" %>
   <div class="bar__spacer"></div>
 
   <% if authenticated? %>

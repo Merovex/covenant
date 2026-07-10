@@ -1,0 +1,116 @@
+/* App menu: the jump-to sheet opened from the brand in the top bar. Built on
+   the native Popover API (::backdrop scrim, Esc/outside dismiss). */
+@layer components {
+  /* Center the brand/trigger in the top bar (Home left, actions right). */
+  .bar.app-header { position: relative; }
+  .app-header__home { display: inline-flex; align-items: center; color: var(--ink); }
+  .app-header__home:hover { color: var(--accent-ink, var(--ink)); }
+  .app-menu-trigger {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-1);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-weight: 700;
+    color: inherit;
+    cursor: pointer;
+  }
+  .app-menu-trigger__chevron { color: var(--ink-muted); }
+
+  .app-menu {
+    /* Reset the UA popover box and place it as a top-centered command sheet. */
+    position: fixed;
+    inset: auto;
+    top: 1em;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(40rem, 92vw);
+    max-height: calc(100vh - 2em);
+    margin: 0;
+    padding: 0;
+    background: var(--canvas);
+    color: var(--ink);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-card);
+    box-shadow: 0 24px 60px -24px rgb(0 0 0 / 0.45);
+    overflow: hidden;
+  }
+  .app-menu::backdrop { background: var(--scrim); }
+
+  .app-menu__panel { display: flex; flex-direction: column; max-height: calc(100vh - 2em); }
+
+  .app-menu__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--size-2);
+    padding: var(--u-pad);
+    border-block-end: var(--border-size-1) solid var(--line);
+  }
+  .app-menu__card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--size-1);
+    padding: var(--u-pad) var(--size-2);
+    border-radius: var(--radius-ui);
+    background: var(--fill-subtle);
+    color: var(--ink);
+    text-decoration: none;
+    text-align: center;
+  }
+  .app-menu__card:hover { background: var(--accent-soft); color: var(--ink-on-soft); }
+  .app-menu__card-icon { color: var(--ink-muted); }
+  .app-menu__card:hover .app-menu__card-icon { color: inherit; }
+  .app-menu__card-label { font-size: 0.85rem; font-weight: 600; }
+  .app-menu__search {
+    flex: none;
+    box-sizing: border-box;
+    width: 100%;
+    padding: var(--u-pad);
+    border: 0;
+    border-block-end: var(--border-size-1) solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    font-size: 1.05rem;
+  }
+  .app-menu__search:focus { outline: none; }
+
+  .app-menu__results { overflow-y: auto; padding: var(--size-2); }
+  .app-menu__group { padding-block: var(--size-2); }
+  .app-menu__header {
+    margin: 0 0 var(--size-1);
+    padding-inline: var(--u-pad);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+  }
+  .app-menu__item {
+    display: flex;
+    align-items: center;
+    gap: var(--size-2);
+    padding: var(--size-2) var(--u-pad);
+    border-radius: var(--radius-ui);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .app-menu__item.is-active,
+  .app-menu__item:hover { background: var(--accent-soft); color: var(--ink-on-soft); }
+  .app-menu__icon { flex: none; color: var(--ink-muted); }
+  .app-menu__item.is-active .app-menu__icon,
+  .app-menu__item:hover .app-menu__icon { color: inherit; }
+  .app-menu__kind {
+    margin-inline-start: auto;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+  }
+  .app-menu__empty { padding: var(--u-pad); text-align: center; color: var(--ink-muted); }
+}

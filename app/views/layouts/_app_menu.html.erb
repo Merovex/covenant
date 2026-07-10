@@ -1,0 +1,45 @@
+<%# The app menu: a jump-to sheet over the app's sections and recent records. %>
+<%# The native Popover API supplies the disclosure — Esc + click-outside dismiss, %>
+<%# top-layer rendering, and a ::backdrop scrim. The app-menu controller adds %>
+<%# type-to-filter and ↑/↓/Enter keyboard nav over the rendered rows. %>
+<div class="app-menu" id="app-menu" popover role="dialog" aria-label="Navigation menu"
+     data-controller="app-menu" data-action="toggle->app-menu#toggled">
+  <div class="app-menu__panel">
+    <nav class="app-menu__grid" aria-label="Quick navigation">
+      <%= app_menu_card "Posts", posts_path, "file-text" %>
+      <%= app_menu_card "Forum", messages_path, "messages-square" %>
+      <%= app_menu_card "Chatroom", chatroom_path, "message-circle" %>
+    </nav>
+
+    <input type="search" class="app-menu__search" placeholder="Search or jump to…"
+           role="combobox" aria-controls="app-menu-results" aria-expanded="true"
+           aria-autocomplete="list" autocomplete="off" autofocus
+           data-app-menu-target="input"
+           data-action="input->app-menu#filter keydown->app-menu#keydown">
+
+    <div class="app-menu__results" id="app-menu-results" role="listbox" data-app-menu-target="results">
+      <section class="app-menu__group" data-app-menu-target="group">
+        <h3 class="app-menu__header">Go to</h3>
+        <%= app_menu_link "Posts", posts_path %>
+        <%= app_menu_link "Forum", messages_path %>
+        <%= app_menu_link "Chatroom", chatroom_path %>
+        <% if Current.user&.domain_admin? %>
+          <%= app_menu_link "Categories", categories_path %>
+        <% end %>
+      </section>
+
+      <% recents = app_menu_recents %>
+      <% if recents.any? %>
+        <section class="app-menu__group" data-app-menu-target="group">
+          <h3 class="app-menu__header">Recent</h3>
+          <% recents.each do |record| %>
+            <%= app_menu_link app_menu_record_label(record), app_menu_record_path(record),
+                  kind: record.recordable_type, icon: app_menu_icon(record.recordable_type) %>
+          <% end %>
+        </section>
+      <% end %>
+
+      <p class="app-menu__empty" data-app-menu-target="empty" hidden>No matches</p>
+    </div>
+  </div>
+</div>

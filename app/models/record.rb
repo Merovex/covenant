@@ -25,6 +25,7 @@ class Record < ApplicationRecord
   scope :comments, -> { where(recordable_type: "Comment") }
   scope :chat_lines, -> { where(recordable_type: "ChatLine") }
   scope :messages, -> { where(recordable_type: "Message") }
+  scope :recently_active, -> { active.includes(:recordable).order(updated_at: :desc) }
 
   before_destroy :destroy_versions
 

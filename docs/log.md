@@ -2,6 +2,24 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-10] ingest | SES/SNS Phase-0 runbook ported from Inkwell
+- Brought over Inkwell's `ses-migration-runbook.md` **verbatim** (per request): the operational Phase-0 AWS/DNS checklist (IAM, DKIM, MAIL FROM/SPF, DMARC, tracking domain, Configuration Sets, SNS webhook, account suppression, sandbox-exit). Inkwell naming left intact (`inkwell-ses`, `inkwell-marketing/-transactional`, `merovex.press`) — rename at execution. Only the ADR cross-links were repointed: `[[0015-…]]` → Alcovo's [[0008-email-relay-amazon-ses]]. The consent-log link `[[0011-subscribers-and-consent-log]]` is an Inkwell reference with no Alcovo equivalent and dangles by design (flagged inline).
+- Caveat recorded: the runbook's marketing/newsletter half (marketing identity, tracking domain, `SubscriberMailer`/`PostBroadcastMailer`, consent log) describes features Alcovo does not have — provisioning-ahead, not current scope.
+- pages touched: [[ses-migration-runbook]] (new), [[0008-email-relay-amazon-ses]], [[index]]
+- refs: ../docs/ses-migration-runbook.md
+
+## [2026-07-10] decision | Email relay — adopt Amazon SES/SNS (ADR 0008)
+- Filed [[0008-email-relay-amazon-ses]] (accepted). Alcovo sends only transactional magic-links today and prod mail is unconfigured (`letter_opener` in dev), so this is a **greenfield SES adoption**, not a Mailgun migration — the ADR reframes Inkwell's 0015 accordingly. Decision: Action Mailer `:ses_v2` via `aws-sdk-rails`, SNS→HTTPS webhook ingest, two sending identities (transactional now, marketing provisioned-ahead), SES account suppression. Anchors the Phase-0 runbook.
+- Open dependency noted: no Alcovo subscribers/consent ADR (Inkwell's 0011) — the marketing stream stays aspirational until one exists.
+- pages touched: [[0008-email-relay-amazon-ses]] (new), [[index]]
+- refs: ../config/environments/production.rb:63, ../app/mailers/session_mailer.rb
+
+## [2026-07-10] build | App menu (jump-to sheet) ported from Inkwell
+- Brought over Inkwell's Basecamp-style global nav and trimmed it to Alcovo's routes. Header's plain "Alcovo" brand link became a house home-icon (→ root) + an "Alcovo ⌄" popover trigger that opens `layouts/_app_menu` — a native-Popover command sheet with a card grid (Posts/Forum/Chatroom), a type-to-filter search, a "Go to" list, and Recent records. `AppMenuHelper` + `app-menu` Stimulus controller (type-to-filter, ↑/↓/Enter) + `app-menu.css` copied in (CSS auto-bundles via `:app`; controller eager-loads). Added `Record.recently_active` scope for the recents list; recents limited to `Post`/`Message` (the recordables with a standalone page), linked by Record id.
+- Removed as irrelevant to Alcovo: Books, Series, Authors, Subscribers, Broadcasts, Analytics, System settings. Categories gated to `domain_admin?` to match its controller `authorize!` (open call noted in the concept page). Downloaded real Lucide `file-text`/`messages-square`/`message-circle` SVGs from source (never hand-drawn). Verified by rendering both partials via `ApplicationController.render` (no server run).
+- pages touched: [[app-menu]] (new), [[index]]
+- refs: ../app/views/layouts/{_header,_app_menu}.html.erb, ../app/helpers/app_menu_helper.rb, ../app/javascript/controllers/app_menu_controller.js, ../app/assets/stylesheets/app-menu.css, ../app/models/record.rb:28
+
 ## [2026-07-04] note | CSS architecture page — the CUBE/BEM hybrid, written down
 - New concept page describing the styling methodology: CUBE decides the rule's kind and cascade home (compositions + utilities in `u-*` files, standard BEM blocks one-per-file, exceptions as modifiers/data-attributes), BEM names the block internals. Covers the Propshaft one-link-per-file + `@layer base, components, utilities` delivery, the two token sources (Open Props for non-color, our OKLCH semantic colors), the "standard components, never bespoke" rule, and a decision ladder for adding styles.
 - pages touched: [[css-architecture]] (new), index.md
