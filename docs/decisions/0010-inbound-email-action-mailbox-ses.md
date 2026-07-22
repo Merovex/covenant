@@ -15,9 +15,22 @@ sources: [../support-desk-plan.md, 0008-email-relay-amazon-ses.md, ../ses-migrat
 > `/rails/action_mailbox/amazon/inbound_emails`) — that's the ingress built into
 > the old monolithic `aws-sdk-rails`. Covenant uses the standalone
 > **`aws-actionmailbox-ses`** gem, whose ingress is **`:ses`**
-> (`config.action_mailbox.ses.subscribed_topics`, route
-> `/rails/action_mailbox/ses/inbound_emails`). The decision is unchanged; only
-> the identifiers differ. See [[ses-migration-runbook]] for the correct wiring.
+> (`config.action_mailbox.ses.subscribed_topic` — **singular**, one ARN, not the
+> plural array; route `/rails/action_mailbox/ses/inbound_emails`). The decision
+> is unchanged; only the identifiers differ. See [[ses-migration-runbook]].
+>
+> **Erratum 2 (2026-07-22) — the routing anchor changed.** This ADR routes on a
+> signed token embedded in our **outbound `Message-ID`**. That does not survive
+> Amazon SES: **SES overwrites the Message-ID** of every message it sends with
+> its own `…@email.amazonses.com` id (proven in the field — a customer reply's
+> `In-Reply-To` was the SES id, not our `reply-<id>-<token>`). So the token
+> scheme never reaches the customer. **Fix:** we no longer set our own
+> Message-ID; `Tickets::RepliesController` sends the reply with `deliver_now` and
+> stores the **SES-assigned** Message-ID on the `Reply`. The customer's client
+> echoes that id in `In-Reply-To`, and `TicketsMailbox` matches it back (the
+> existing header-matching path). Threading is now anchored on the SES id, not a
+> token; sender-email still resolves the `Customer` only, and a missing/dropped
+> reference still degrades to a new ticket — never a misroute.
 
 ## Context
 Tickets ([[0009-support-desk-customers-licenses-tickets]]) are email in **and**

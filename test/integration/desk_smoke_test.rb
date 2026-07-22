@@ -31,8 +31,8 @@ class DeskSmokeTest < ActionDispatch::IntegrationTest
     patch ticket_path(ticket_record), params: { ticket: { status: "pending" } }
     assert ticket_record.reload.recordable.pending?
 
-    # agent reply → sends mail, threads
-    assert_enqueued_emails 1 do
+    # agent reply → sends mail now (so we can capture the SES Message-ID)
+    assert_emails 1 do
       post ticket_replies_path(ticket_record), params: { reply: { content: "<p>on it</p>" } }
     end
     assert_equal 1, ticket_record.recordable.replies.count

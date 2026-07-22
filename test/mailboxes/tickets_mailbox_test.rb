@@ -55,6 +55,25 @@ class TicketsMailboxTest < ActionMailbox::TestCase
     assert ticket.replies.last.inbound?
   end
 
+  test "a reply referencing a stored (SES-assigned) outbound Message-ID threads via headers" do
+    ticket = open_ticket
+    # SES rewrites our Message-ID, so we store the id SES assigned; the customer's
+    # client echoes it in In-Reply-To, and header matching recovers the thread.
+    ses_mid = "0100dead-beef-000000@email.amazonses.com"
+    outbound = Reply.new(direction: :outbound, from_address: "support@x",
+      to_address: @customer.email, message_id: ses_mid, creator: users(:admin))
+    outbound.content = "<p>try this</p>"
+    Record.originate(outbound, parent: ticket.record)
+
+    assert_difference -> { ticket.replies.count }, 1 do
+      receive_inbound_email_from_mail(
+        from: @customer.email, to: "support@support.example.com",
+        subject: "Re: Broken", in_reply_to: "<#{ses_mid}>", body: "<p>didn't work</p>")
+    end
+
+    assert ticket.replies.last.inbound?
+  end
+
   test "a message whose id already belongs to a reply is dropped (idempotent ingest)" do
     ticket = open_ticket
     # The mailbox stores mail.message_id, which the Mail gem returns WITHOUT
