@@ -34,8 +34,6 @@
   </p>
 </header>
 
-<%= render "shared/note", notable: @record %>
-
 <%# Context: the customer's other recent tickets (3 most recent, or the last 30
     days, whichever is larger). Subject links, then status, opened, and updated. %>
 <% if @related_tickets.any? %>
@@ -57,6 +55,8 @@
     </ul>
   </section>
 <% end %>
+
+<%= render "shared/note", notable: @record %>
 
 <%# The opener — the customer's first message (or the agent's, if opened in-app). %>
 <article class="ticket__opener u-flow"><%= @ticket.content %></article>
