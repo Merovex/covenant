@@ -1,4 +1,4 @@
-<%# locals: (crumbs: [], menu_id: "canvas-menu", menu: true, edit_href: nil) %>
+<%# locals: (crumbs: [], menu_id: "canvas-menu", menu: true, edit_href: nil, lead: nil) %>
 <%# Standard canvas head: breadcrumb (left) + contextual actions (right). %>
 <%# crumbs is an array of [label, href]; a nil href marks the current page. %>
 <%# With menu: true (default) the block yields menu items into the ... popover; %>
@@ -24,6 +24,8 @@
   <% if actions.present? %>
     <% if menu %>
       <div class="canvas__head-actions">
+        <%# Pulled-out actions (Basecamp-style): a `lead` fragment and/or an Edit link. %>
+        <%= lead %>
         <% if edit_href %>
           <%= link_to "Edit", edit_href, class: "button button--ghost canvas__head-action" %>
         <% end %>

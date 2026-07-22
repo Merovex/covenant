@@ -30,6 +30,16 @@ class TicketsWorkflowTest < ActionDispatch::IntegrationTest
     assert_not_includes current.content.to_plain_text, "TAMPERED"
   end
 
+  test "show renders status actions in the head and offers no Edit" do
+    ticket = open_ticket
+    get ticket_path(ticket.record)
+
+    assert_response :success
+    assert_select "a", text: "Edit", count: 0
+    assert_select "button", text: "Resolved"
+    assert_select "button", text: "Hold"
+  end
+
   test "the Resolved button resolves and stamps resolved_at" do
     ticket = open_ticket
 

@@ -53,6 +53,9 @@
     padding-inline-end: calc(var(--u-pad) / 2);
   }
 
+  /* button_to's wrapping form shouldn't disturb the flex flow of head actions. */
+  .canvas__head-form { display: contents; }
+
   /* the ... trigger matches the other head buttons: 32px, square */
   .canvas__head-actions .button--icon {
     block-size: calc(var(--u-pad) * 2);
