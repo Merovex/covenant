@@ -536,6 +536,8 @@ open items below were resolved at execution:
    receipt rule.
 8. **Agent-initiated tickets** — an in-app ticket's first message is its opener,
    same as an inbound email; no autoresponder (that's inbound-only).
-9. **Autoresponder** — `TicketMailer#acknowledgement` fires on inbound-opened
-   tickets (Basecamp-style 24/5 copy, branded Covenant); video link is a config
-   knob (`ApplicationMailer.support_video_url`).
+9. **Autoresponder** — ~~`TicketMailer#acknowledgement` fires on inbound-opened
+   tickets~~ **Removed 2026-07-22.** We never auto-reply to inbound mail: an
+   opener is often spam or a spoofed From, and auto-replying is backscatter that
+   harms sending reputation. Agents reply by hand. (Dropped the `acknowledgement`
+   mailer, its views, and the `support_video_url` knob.)

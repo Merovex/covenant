@@ -7,7 +7,7 @@ image: covenant
 # Deploy to these servers.
 servers:
   web:
-    - 192.168.0.1
+    - 5.161.252.146
   # job:
   #   hosts:
   #     - 192.168.0.1
@@ -24,12 +24,12 @@ servers:
 #   ssl: true
 #   host: app.example.com
 
-# Publish the kamal-proxy on host port 3025 instead of the default 80.
-# The proxy forwards to the app container on proxy.app_port (default 80),
-# where Thruster listens (see Dockerfile EXPOSE 80).
+# kamal-proxy terminates SSL (Let's Encrypt) and routes covenant.verkilo.com to
+# this app. A shared kamal-proxy already runs on this host for other Kamal apps;
+# it routes by hostname, so each app gets its own cert on 80/443.
 proxy:
-  run:
-    http_port: 3025
+  ssl: true
+  host: covenant.verkilo.com
 
 # Where you keep your container images.
 registry:
@@ -73,10 +73,12 @@ aliases:
   logs: app logs -f
   dbc: app exec --interactive --reuse "bin/rails dbconsole --include-password"
 
-# Use a persistent storage volume for sqlite database files and local Active Storage files.
-# Recommended to change this to a mounted volume path that is backed up off server.
+# Persistent bind-mount storage for the SQLite databases, Active Storage files,
+# and logs. Created by bin/provision-storage.sh (run once, as root, before the
+# first `kamal setup`) — owned by the container uid/gid (1000). Matches cohwall.
 volumes:
-  - "covenant_storage:/rails/storage"
+  - "/var/lib/covenant:/rails/storage"
+  - "/var/lib/covenant/logs:/rails/log"
 
 # Bridge fingerprinted assets, like JS and CSS, between versions to avoid
 # hitting 404 on in-flight requests. Combines all files from new and old

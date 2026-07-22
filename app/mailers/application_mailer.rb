@@ -11,10 +11,11 @@ class ApplicationMailer < ActionMailer::Base
       ENV.fetch("SUPPORT_INBOUND_DOMAIN", "support.example.com")
   end
 
-  # Where the acknowledgement autoresponder points customers to screen-record a
-  # bug. A single knob; swap for your recorder (Loom, etc.) via ENV/credentials.
-  def self.support_video_url
-    Rails.application.credentials.dig(:support, :video_url) ||
-      ENV.fetch("SUPPORT_VIDEO_URL", "https://#{inbound_domain}/record")
+  # From address for the transactional/auth stream (magic-links) — deliberately
+  # distinct from the support desk's support@ From so auth mail is unreplyable
+  # and can carry its own reputation. Set via credentials[:ses][:transactional_from].
+  def self.transactional_from
+    Rails.application.credentials.dig(:ses, :transactional_from) ||
+      "noreply@#{inbound_domain}"
   end
 end

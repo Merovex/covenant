@@ -113,6 +113,10 @@ GEM
       actionmailbox (>= 7.1.0)
       aws-sdk-s3 (~> 1, >= 1.123.0)
       aws-sdk-sns (~> 1, >= 1.61.0)
+    aws-actionmailer-ses (1.2.0)
+      actionmailer (>= 7.1.0)
+      aws-sdk-ses (~> 1, >= 1.50.0)
+      aws-sdk-sesv2 (~> 1, >= 1.34.0)
     aws-eventstream (1.4.0)
     aws-partitions (1.1271.0)
     aws-sdk-core (3.254.0)
@@ -129,6 +133,12 @@ GEM
     aws-sdk-s3 (1.228.0)
       aws-sdk-core (~> 3, >= 3.254.0)
       aws-sdk-kms (~> 1)
+      aws-sigv4 (~> 1.5)
+    aws-sdk-ses (1.102.0)
+      aws-sdk-core (~> 3, >= 3.254.0)
+      aws-sigv4 (~> 1.5)
+    aws-sdk-sesv2 (1.104.0)
+      aws-sdk-core (~> 3, >= 3.254.0)
       aws-sigv4 (~> 1.5)
     aws-sdk-sns (1.118.0)
       aws-sdk-core (~> 3, >= 3.254.0)
@@ -439,6 +449,7 @@ PLATFORMS
 
 DEPENDENCIES
   aws-actionmailbox-ses (~> 0.2.0)
+  aws-actionmailer-ses (~> 1.2)
   bootsnap
   brakeman
   bundler-audit
@@ -483,11 +494,14 @@ CHECKSUMS
   addressable (2.9.0) sha256=7fdf6ac3660f7f4e867a0838be3f6cf722ace541dd97767fa42bc6cfa980c7af
   ast (2.4.3) sha256=954615157c1d6a382bc27d690d973195e79db7f55e9765ac7c481c60bdb4d383
   aws-actionmailbox-ses (0.2.0) sha256=3b840be5de743a508084d9e5619aaed29af058e3d5000ada37dc6ed32c41706b
+  aws-actionmailer-ses (1.2.0) sha256=e01ccfcc5bf1449abb91bb8b15e7945e97310144c7f67fee8d9b76de2e89107f
   aws-eventstream (1.4.0) sha256=116bf85c436200d1060811e6f5d2d40c88f65448f2125bc77ffce5121e6e183b
   aws-partitions (1.1271.0) sha256=a078db0fa59bb5beeceef56b3a482140179ece702ee94fbc94196e2281296c0c
   aws-sdk-core (3.254.0) sha256=ee3e3220b8468a3c9e59daba18e6ec897bf5c7ce8adcc0670cfa2f1f092112fe
   aws-sdk-kms (1.130.0) sha256=a2e83662ca31b77a2a19c9aa2f40a98165a67270c18c718fe1c70d0cbd7cd749
   aws-sdk-s3 (1.228.0) sha256=9b0cd7655d32643e2969030acbfa67326afcd5fd91325239a4ad5f3365f0f801
+  aws-sdk-ses (1.102.0) sha256=02bca66d12b856c37fce614f0f2ed68198af1ae938f41e08c53afac3bda2618f
+  aws-sdk-sesv2 (1.104.0) sha256=b50b247587af9ed3adb0e92b7af87b3ff38fcd1f499c1b26b75c3d307b5e4ba4
   aws-sdk-sns (1.118.0) sha256=46786eb1a27f8031163572043ed750cd292a1ca408527c5589ba5ecd43a0d2b9
   aws-sigv4 (1.12.1) sha256=6973ff95cb0fd0dc58ba26e90e9510a2219525d07620c8babeb70ef831826c00
   base64 (0.3.0) sha256=27337aeabad6ffae05c265c450490628ef3ebd4b67be58257393227588f5a97b

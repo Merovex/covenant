@@ -10,6 +10,15 @@ sources: [../support-desk-plan.md, 0008-email-relay-amazon-ses.md, ../ses-migrat
 
 # 0010. Inbound support email — Action Mailbox (SES/SNS) + Message-ID token routing
 
+> **Erratum (2026-07-22).** This ADR names the `:amazon` ingress
+> (`config.action_mailbox.amazon.subscribed_topics`, route
+> `/rails/action_mailbox/amazon/inbound_emails`) — that's the ingress built into
+> the old monolithic `aws-sdk-rails`. Covenant uses the standalone
+> **`aws-actionmailbox-ses`** gem, whose ingress is **`:ses`**
+> (`config.action_mailbox.ses.subscribed_topics`, route
+> `/rails/action_mailbox/ses/inbound_emails`). The decision is unchanged; only
+> the identifiers differ. See [[ses-migration-runbook]] for the correct wiring.
+
 ## Context
 Tickets ([[0009-support-desk-customers-licenses-tickets]]) are email in **and**
 out. [[0008-email-relay-amazon-ses]] committed to SES v2 for **sending only** —

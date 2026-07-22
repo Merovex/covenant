@@ -5,8 +5,11 @@
 #      the tamper-proof, authoritative route back to a ticket.
 #   2. else a referenced Message-ID matches a stored Reply/Ticket id →
 #      Strategy 2, recovers threads whose client dropped our token.
-#   3. else open a new ticket (find-or-create the customer by From) and fire
-#      the acknowledgement autoresponder.
+#   3. else open a new ticket (find-or-create the customer by From).
+#
+# No autoresponder: we deliberately never auto-reply to inbound mail. A new
+# ticket's opener is often spam or a spoofed From, and auto-replying to a forged
+# sender is backscatter that harms our sending reputation. Agents reply by hand.
 #
 # Idempotent: a redelivered notification (same Message-ID) is dropped before it
 # can create a second row.
@@ -74,8 +77,6 @@ class TicketsMailbox < ApplicationMailbox
         from_address: sender_email, message_id: mail.message_id, creator: User.system)
       ticket.content = body_html
       Record.originate(ticket)
-
-      TicketMailer.with(ticket: ticket).acknowledgement.deliver_later
     end
 
     def customer

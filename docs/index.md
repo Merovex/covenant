@@ -19,7 +19,7 @@ for canonical naming.
 - [multi-tenancy.md](multi-tenancy.md) — shared-DB, row-level tenancy (`Current.account`)
 - [database-and-scaling.md](database-and-scaling.md) — SQLite vs MariaDB; when to split app servers
 - [lexxy-and-active-record.md](lexxy-and-active-record.md) — Lexxy editor + Action Text coupling
-- [ses-migration-runbook.md](ses-migration-runbook.md) — Phase 0 (AWS + DNS) checklist for the SES/SNS email setup (ADR 0008); ported verbatim from Inkwell, Inkwell naming intact
+- [ses-migration-runbook.md](ses-migration-runbook.md) — AWS + DNS checklist for SES send (ADR 0008) **and** inbound support mail (ADR 0010), for Covenant/`verkilo.com`; reflects the reused SES account. **Rewritten from the Inkwell port 2026-07-22**
 - [support-desk-plan.md](support-desk-plan.md) — build plan for License tracking + Ticket management (Customer/License/Ticket/Reply on the spine; inbound/outbound email; Pine theme); anchors ADRs 0009 & 0010. **BUILT 2026-07-22** (SES integration deferred); open items resolved in-page
 
 ## Decisions (ADRs)

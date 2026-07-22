@@ -31,9 +31,10 @@ design/reference docs and the work log; see [[CLAUDE]] for how it's maintained.
   `Record#comments`. Ticket lifecycle: **open · pending · on_hold · resolved ·
   closed**. Admin-only (support agents = `domain_admin`). Inbound via Action
   Mailbox with token-in-Message-ID routing; outbound `TicketMailer` (agent reply
-  + acknowledgement autoresponder). **SES/AWS integration deferred** — the
-  mailbox/mailer code exists and is tested against the Action Mailbox conductor;
-  production ingress config stays commented (see [[ses-migration-runbook]]).
+  only — **no autoresponder**, we never auto-reply to inbound mail: backscatter
+  risk). Inbound accepts `support@` + `press@`; both open Tickets. **SES send +
+  receive code is wired but dormant** until the `:ses` / `:support` credentials
+  exist (see [[ses-migration-runbook]]).
 - **Theme repointed to Pine** (Teal's lightness/hue, chroma dropped ~75%).
 - The generic template sections (Posts / Forum / Chatroom) are **hidden from
   nav** — their code remains, but Covenant presents purely as a support desk.

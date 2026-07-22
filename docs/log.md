@@ -2,6 +2,21 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-22] refactor | Dropped the inbound autoresponder; press@ added as a second address
+- **Removed the acknowledgement autoresponder.** `TicketsMailbox#open_ticket` no longer fires `TicketMailer.acknowledgement`; deleted the `acknowledgement` mailer action, both `ticket_mailer/acknowledgement.*` views, the mailer test, and the now-dead `ApplicationMailer.support_video_url` helper (+ its `:support/:video_url` credential). Rationale: a new ticket's opener is often spam/spoofed, and auto-replying to a forged From is backscatter that harms our *sending* reputation. Agents reply by hand.
+- **Inbound addresses:** `support@verkilo.com` **and** `press@verkilo.com` are the two accepted localparts (no catch-all → SES drops the rest, killing scraped spam). Both open Tickets today via `ApplicationMailbox routing all: :tickets`; a dedicated `PressMailbox` is a later option if press needs different handling.
+- **HEY-for-Domains considered and rejected** for the desk: it's a walled garden (no API/IMAP/webhook), so it can't feed the app's Ticket model — choosing it would mean shelving the built desk. Staying on SES inbound. (HEY/forward remains a fine choice for `press@` if app-tracking isn't wanted.)
+- Mail tests green (5 runs). pages touched: [[ses-migration-runbook]], [[overview]], [[support-desk-plan]], [[log]]
+- refs: `app/mailboxes/tickets_mailbox.rb`, `app/mailers/ticket_mailer.rb`, `app/mailers/application_mailer.rb`, `test/mailers/ticket_mailer_test.rb`
+
+## [2026-07-22] build | SES wired for send+receive; runbook rewritten for verkilo.com
+- **Reconciled the SES runbook against reality.** The old [[ses-migration-runbook]] was the Inkwell/`cohwall.com` doc dropped in verbatim: wrong app/domain, and it claimed the outbound send path + a `Webhooks::SesController` were "DONE on master" — neither existed here. Rewrote it for **Covenant / `verkilo.com`**, covering **both** send (ADR 0008) and inbound support mail (ADR 0010), and reflecting a **reused SES account** (IAM user, config sets, account suppression, production access = reuse+verify; identities/DNS + the whole inbound stack = new).
+- **Layout:** transactional identity = `verkilo.com` apex (magic-links + `support@verkilo.com`, DKIM `d=verkilo.com`); marketing = `news.verkilo.com` (provisioned ahead, no `AnnouncementMailer` yet); inbound `support@verkilo.com` via S3 + receipt rule + apex MX + new `covenant-inbound` SNS topic → the `:ses` ingress.
+- **Code wired (dormant until credentials exist):** added `aws-actionmailer-ses`; `production.rb` now sets `:ses_v2` delivery + `ses_v2_settings` (guarded by `credentials[:ses]`), the `:ses` Action Mailbox ingress + `subscribed_topics` (guarded by `credentials[:support][:sns_topic_arn]`), and `default_url_options` host `verkilo.com` (`APP_HOST` override). Booted prod config keyless → clean fallback (`delivery=smtp`, ingress nil). **Chose not to build** an outbound bounce/complaint webhook — account suppression is the net (no `Subscriber` model).
+- **Erratum on [[0010-inbound-email-action-mailbox-ses]]:** it named the `:amazon` ingress (old `aws-sdk-rails`); the installed `aws-actionmailbox-ses` gem uses **`:ses`** (route `/rails/action_mailbox/ses/inbound_emails`). Added a dated note; ADR body left immutable.
+- pages touched: [[ses-migration-runbook]] (rewrite), [[0010-inbound-email-action-mailbox-ses]] (erratum), [[index]], [[log]]
+- refs: `Gemfile`, `config/environments/production.rb`
+
 ## [2026-07-22] note | Docs synced to the built support desk
 - Rewrote [[overview]] (Alcovo → Covenant; single-tenant support desk; 2026-07-22 state: authed dashboard, ticket lifecycle, Pine, deferred SES). Marked [[support-desk-plan]] **BUILT** and rewrote its open items as resolved (final status set `open|pending|on_hold|resolved|closed`, system-user creator with required `Reply.creator`, partial-unique Message-ID index, inbound-domain config, autoresponder).
 - New concept [[inactive-features]]: Posts/Forum/Chatroom (+ Categories, Comments) are hidden from nav but fully present in code — table of what's dormant, how it was hidden (menu/dashboard/root only), and how to bring one back. Chose to **document rather than relocate** (moving Rails code into a "nonactive" folder fights Zeitwerk for no gain).

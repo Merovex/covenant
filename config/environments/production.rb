@@ -1,13 +1,32 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
-  # Support desk inbound mail (Action Mailbox via aws-actionmailbox-ses). Left
-  # off until SES is wired up — see docs/decisions/0010-inbound-email-action-mailbox-ses.md
-  # and the SES inbound runbook. When enabling: set the ingress, list the
-  # approved SNS topic ARN(s), and point delivery at SES for outbound.
-  # config.action_mailbox.ingress = :ses
-  # config.action_mailbox.ses.subscribed_topics = [ Rails.application.credentials.dig(:support, :sns_topic_arn) ]
-  # config.action_mailer.delivery_method = :ses_v2
+  # ---- Email: Amazon SES ----
+  # Send (:ses_v2) + receive (Action Mailbox :ses ingress). Both stay dormant
+  # until the matching credentials are present, so a keyless prod boots clean and
+  # dev keeps using letter_opener. See docs/ses-migration-runbook.md.
+
+  # Outbound: SES v2 (aws-actionmailer-ses). Activated by the :ses credentials.
+  if (ses = Rails.application.credentials.ses)
+    config.action_mailer.delivery_method = :ses_v2
+    config.action_mailer.ses_v2_settings = {
+      region: ses[:region] || "us-east-1",
+      credentials: Aws::Credentials.new(ses[:access_key_id], ses[:secret_access_key])
+    }.tap do |s|
+      # Transactional stream: no open/click tracking (see runbook Step 6). The
+      # marketing stream, when it lands, overrides this per-mailer via
+      # `default delivery_method_options: { configuration_set_name: ... }`.
+      cs = ses[:transactional_config_set]
+      s[:configuration_set_name] = cs if cs.present?
+    end
+  end
+
+  # Inbound: SES receipt rule → S3 → SNS → the :ses ingress. Activated by the
+  # support SNS topic ARN. Routes to TicketsMailbox (see ADR 0010).
+  if (topic = Rails.application.credentials.dig(:support, :sns_topic_arn)).present?
+    config.action_mailbox.ingress = :ses
+    config.action_mailbox.ses.subscribed_topics = [ topic ]
+  end
 
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -65,17 +84,12 @@ Rails.application.configure do
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 
-  # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
-
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+  # Host for URLs in mailer templates (magic-link sign-in, etc.). The app's web
+  # host — independent of the SES sending identity. From credentials[:ses][:host],
+  # then APP_HOST, then a sane default.
+  config.action_mailer.default_url_options = {
+    host: Rails.application.credentials.dig(:ses, :host) || ENV.fetch("APP_HOST", "verkilo.com")
+  }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

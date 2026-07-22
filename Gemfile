@@ -75,4 +75,6 @@ gem "lexxy", "~> 0.9.22"
 
 gem "diff-lcs", "~> 2.0"
 
+# Inbound support mail (Action Mailbox :ses ingress) and outbound send (:ses_v2).
 gem "aws-actionmailbox-ses", "~> 0.2.0"
+gem "aws-actionmailer-ses", "~> 1.2"

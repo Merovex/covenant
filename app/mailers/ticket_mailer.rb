@@ -4,14 +4,6 @@
 # Message-ID. The customer's client echoes that Message-ID into
 # In-Reply-To/References on reply, and TicketsMailbox reads it back to thread.
 class TicketMailer < ApplicationMailer
-  # Auto-reply on a customer's first email — sets expectations while an agent
-  # picks it up. Fired from TicketsMailbox when a new ticket is opened inbound.
-  def acknowledgement
-    @ticket = params[:ticket]
-
-    mail to: @ticket.customer.email, subject: "Re: #{@ticket.title}"
-  end
-
   # An agent's reply to the customer. Carries the tokenised Message-ID and, when
   # there's a prior inbound message, standard In-Reply-To/References so the
   # customer's client keeps the thread. Persists the sent Message-ID on the

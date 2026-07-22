@@ -8,14 +8,6 @@ class TicketMailerTest < ActionMailer::TestCase
     Record.originate(@ticket)
   end
 
-  test "acknowledgement greets the customer with the desk copy" do
-    mail = TicketMailer.with(ticket: @ticket).acknowledgement
-
-    assert_equal [ @customer.email ], mail.to
-    assert_equal "Re: Cannot log in", mail.subject
-    assert_match "The Crew at Covenant", mail.body.encoded
-  end
-
   test "reply embeds a tamper-proof token in the Message-ID and persists it" do
     reply = Reply.new(direction: :outbound, from_address: "support@support.example.com",
       to_address: @customer.email, creator: users(:admin))
