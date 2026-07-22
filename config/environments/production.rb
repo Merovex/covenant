@@ -28,6 +28,17 @@ Rails.application.configure do
   if (topic = Rails.application.credentials.dig(:support, :sns_topic_arn)).present?
     config.action_mailbox.ingress = :ses
     config.action_mailbox.ses.subscribed_topic = topic
+
+    # The gem reads the raw email back out of S3 (the SNS notification only points
+    # at bucket/key). Authenticate that S3 client with the SES IAM keys — the user
+    # also needs s3:GetObject on the inbound bucket.
+    if (creds = Rails.application.credentials.ses)
+      config.action_mailbox.ses.s3_client_options = {
+        region: creds[:region] || "us-east-1",
+        access_key_id: creds[:access_key_id],
+        secret_access_key: creds[:secret_access_key]
+      }
+    end
   end
 
   # Settings specified here will take precedence over those in config/application.rb.
