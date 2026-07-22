@@ -1,50 +1,76 @@
-# Overview — Alcovo
+# Overview — Covenant
 
 > Living synthesis of the current state of the project. Update this whenever the
 > shape of the work changes. Keep it short — details live in linked pages.
 
 ## What this is
 
-Alcovo — a Rails 8.1 application (Ruby 4.0.5, app module `Alcovo`). This `docs/`
-folder is the single home for both design/reference docs and the work log; see
-[[CLAUDE]] for how it's maintained.
+Covenant — a Rails 8.x application (Ruby 4.0.5, app module `Covenant`). Scaffolded
+from the **Alcovo** template, so older ADRs, design docs, and CSS still say
+"Alcovo" — treat those as the same codebase. Covenant is a **single-tenant
+support desk**: license tracking + ticket management (email in and out) built on
+the Record/Recordable spine. This `docs/` folder is the single home for both
+design/reference docs and the work log; see [[CLAUDE]] for how it's maintained.
 
-## Current state (2026-07-03)
+## Current state (2026-07-22)
 
-- Project scaffolded (`Rails init.` — commit `d68544e`).
-- Documentation consolidated into `docs/` (see [0003](decisions/0003-collapse-wiki-into-docs.md)); Karpathy-style, LLM-maintained.
-- Passwordless auth (magic links), first-run Setup, basic UI/design system shipped.
-- **Record/Recordable spine implemented** ([0006](decisions/0006-record-recordable-generic-spine.md)):
-  tenant-agnostic `Record` envelope + `Recordable` concern, first recordable
-  `Post` (drafted/published, pinning, trash) with full CRUD UI, Action Text +
-  Active Storage, **Lexxy** editor. Alcovo's real tools (Chat, Discussions,
-  Questions, Wordcounts) still to come on these bones.
-- **Version history shipped** ([0007](decisions/0007-versioned-recordables.md)):
-  recordables are immutable event-tagged versions behind a record-keyed
-  identity (`/posts/:id` = Record id); drafts mutate, published content
-  versions on every save; Basecamp-style change feed ("Change Log") +
-  tracked-changes diffs at `/posts/:id/events` and
-  `/posts/:id/changes/:version_id`. Scheduled publishing added: a `scheduled`
-  status/event keeps the post mutable until `Post::PublishLaterJob` publishes
-  it at the appointed time (native-popover scheduler panel in the composer).
+- **Renamed Alcovo → Covenant** across the app (module, views, mailer copy,
+  Kamal deploy). ADRs and reference docs keep the historical name as-is.
+- **Whole site behind authentication.** Root is now a **dashboard**, not the
+  styleguide: new-license stat cards (today / this week / month / year) over the
+  **open-ticket queue**, with links to the pending and on-hold queues. Only the
+  session / setup / signup flows are public. Dev convenience: the "check your
+  email" page surfaces the magic-link code (development only) with a one-click
+  sign-in. A seeded non-interactive `system` user (`User.people` excludes it)
+  authors email-ingested content without blocking first-run Setup.
+- **Support desk shipped** ([0009](decisions/0009-support-desk-customers-licenses-tickets.md),
+  [0010](decisions/0010-inbound-email-action-mailbox-ses.md), [[support-desk-plan]]):
+  `Customer` (plain table), `License` / `Ticket` / `Reply` (recordables on the
+  spine, immutable → free audit history). Ticket opener + replies are Action
+  Text; replies thread under the ticket via `records.parent_id`, mirroring
+  `Record#comments`. Ticket lifecycle: **open · pending · on_hold · resolved ·
+  closed**. Admin-only (support agents = `domain_admin`). Inbound via Action
+  Mailbox with token-in-Message-ID routing; outbound `TicketMailer` (agent reply
+  + acknowledgement autoresponder). **SES/AWS integration deferred** — the
+  mailbox/mailer code exists and is tested against the Action Mailbox conductor;
+  production ingress config stays commented (see [[ses-migration-runbook]]).
+- **Theme repointed to Pine** (Teal's lightness/hue, chroma dropped ~75%).
+- The generic template sections (Posts / Forum / Chatroom) are **hidden from
+  nav** — their code remains, but Covenant presents purely as a support desk.
+  See [[inactive-features]] for what's dormant and how to bring it back.
+
+## Earlier state (2026-07-03) — the content spine
+
+- Passwordless auth (magic links), first-run Setup, the design system.
+- **Record/Recordable spine** ([0006](decisions/0006-record-recordable-generic-spine.md))
+  + **versioned recordables** ([0007](decisions/0007-versioned-recordables.md)):
+  tenant-agnostic `Record` envelope, immutable event-tagged versions behind a
+  record-keyed identity (`/posts/:id` = Record id); drafts mutate, published
+  content versions on every save; change feed + tracked-change diffs; scheduled
+  publishing. `Post` / `Message` / `Comment` / `ChatLine` were the first
+  recordables; `License` / `Ticket` / `Reply` now join them.
 
 ## Core vocabulary
 
-Canonical names (see [[domain-vocabulary]] / [0002](decisions/0002-domain-vocabulary-person-user-account.md)):
-**`Person`** (global login) ──< **`User`** (membership) ──< **`Account`** (tenant).
-Retired: `Identity`, `Membership`, `Group`, `bucket`.
+Covenant is **single-tenant**: there is no `accounts` table and no `account_id`.
+The real identity table is `users` (`email_address`, `name`, `role` —
+`member` / `domain_admin` / `system`). The Person / User / Account vocabulary in
+[[domain-vocabulary]] / [0002](decisions/0002-domain-vocabulary-person-user-account.md)
+is notional and deferred; a host app that needs tenancy would add `Account` +
+`records.account_id` as a spine extension.
 
 ## Key references
 
-- [Reference & design docs](index.md#reference--design-docs) — data model, authentication, multi-tenancy, database & scaling, Lexxy/ActiveRecord.
-- Schema snapshot: [schema.rb](schema.rb).
+- [Reference & design docs](index.md#reference--design-docs) — data model, authentication, database & scaling, Lexxy/ActiveRecord, SES runbook, support-desk plan.
+- [[inactive-features]] — template sections kept in the code but hidden from nav.
+- Schema: [../db/schema.rb](../db/schema.rb).
 
 ## Open threads
 
-- Reconcile [data-model.md](data-model.md) / [schema.rb](schema.rb) with ADRs
-  0006/0007 (naming `Record`, versioned recordables, no envelope status or
-  account_id, Vault dropped) when Alcovo's real tools land.
+- **SES/AWS email wiring** — inbound receipt rule → SNS → ingress, plus outbound
+  delivery; add an inbound section to [[ses-migration-runbook]]. Code is ready;
+  only the AWS/DNS setup + production config remain.
+- Dashboard open-ticket list is **unpaginated** (fine while small; cap or
+  paginate before the queue grows large).
 - Trash purge job (30-day incineration of `records.trashed_at`, cascading
   versions + bodies).
-- Alcovo tenancy: add `Account` + `records.account_id` as a host-app extension
-  of the spine; then the ADR 0002 Person/User split (deferred 2026-07-02).

@@ -2,6 +2,12 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-22] note | Docs synced to the built support desk
+- Rewrote [[overview]] (Alcovo → Covenant; single-tenant support desk; 2026-07-22 state: authed dashboard, ticket lifecycle, Pine, deferred SES). Marked [[support-desk-plan]] **BUILT** and rewrote its open items as resolved (final status set `open|pending|on_hold|resolved|closed`, system-user creator with required `Reply.creator`, partial-unique Message-ID index, inbound-domain config, autoresponder).
+- New concept [[inactive-features]]: Posts/Forum/Chatroom (+ Categories, Comments) are hidden from nav but fully present in code — table of what's dormant, how it was hidden (menu/dashboard/root only), and how to bring one back. Chose to **document rather than relocate** (moving Rails code into a "nonactive" folder fights Zeitwerk for no gain).
+- Also shipped small UI fixes: "My Profile" now links to the working name/avatar page (relabelled from "Settings"); breadcrumbs drop the leading house + slash (home lives in the header).
+- pages touched: [[overview]], [[index]], [[support-desk-plan]], [[inactive-features]] (new), [[log]]
+
 ## [2026-07-22] build | App renamed Covenant; authed dashboard home; support-only nav
 - Renamed the app **Alcovo → Covenant** across `app/`, `config/` (incl. `module Covenant`), the autosave localStorage prefix, and Kamal `deploy.yml` service/image/volume. `docs/` left as historical record (the plan already notes Alcovo ≡ Covenant). No `Alcovo::` constant was referenced anywhere, so the module rename was inert.
 - **Whole site behind auth**: dropped `allow_unauthenticated_access` from the styleguide (`StaticController`); only session/setup/signup stay public. Root is now a real **dashboard** (`DashboardController#show`), not the styleguide.

@@ -24,6 +24,13 @@ servers:
 #   ssl: true
 #   host: app.example.com
 
+# Publish the kamal-proxy on host port 3025 instead of the default 80.
+# The proxy forwards to the app container on proxy.app_port (default 80),
+# where Thruster listens (see Dockerfile EXPOSE 80).
+proxy:
+  run:
+    http_port: 3025
+
 # Where you keep your container images.
 registry:
   # Alternatives: hub.docker.com / registry.digitalocean.com / ghcr.io / ...

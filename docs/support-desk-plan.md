@@ -105,7 +105,7 @@ tickets
   event          :string  null: false  default: "created"
   customer_id    :integer null: false         # FK customers
   title          :string  null: false
-  status         :string  null: false  default: "open"      # open|pending|closed  (add "resolved"? see Open items)
+  status         :string  null: false  default: "open"      # open|pending|on_hold|resolved|closed
   from_address   :string                                    # opener's From (usually customer.email)
   message_id     :string                                    # opener Message-ID (threading + ingest dedup)
   timestamps
@@ -180,7 +180,7 @@ class Ticket < ApplicationRecord
   belongs_to :customer
   has_rich_text :content              # the customer's opening email
 
-  enum :status, %w[ open pending closed ].index_by(&:itself), default: :open
+  enum :status, %w[ open pending on_hold resolved closed ].index_by(&:itself), default: :open
 
   validates :title, presence: true
   def mutable? = false
@@ -504,18 +504,38 @@ stop to clear WCAG AA on Pine's lighter ramp — **check contrast** (checklist).
   `.license` blocks; `/theme` demos.
 - **F — Tests:** mailbox, mailer, model.
 
-## Open items / assumptions (confirm at execution)
+## Status — BUILT (2026-07-22)
 
-1. **Ticket status set** — `open | pending | closed`; add `resolved`?
-2. **License status set** — `active | suspended | expired | revoked`.
-3. **Inbound ticket creator** — seed a `system` User vs. make `tickets.creator_id`
-   nullable. Plan assumes a seeded system user.
-4. **License key uniqueness** — enforced among `License.current` by validation,
-   not a raw DB unique index (versions repeat the key).
-5. **Attachments** — Active Storage on Reply/Ticket from `mail.attachments`;
-   Phase 2.
-6. **Inbound domain** — e.g. `inbound.verkilo.com` / `support@…`; finalize with
-   the SES receipt rule.
-7. **Agent-initiated tickets** — opener is normally the customer's inbound email
-   (Ticket.content). If an agent opens a ticket, treat the first message as the
-   Ticket opener too (direction is implicit; Ticket has no `direction`).
+Phases A–F are implemented and tested (SES/AWS integration deferred — the
+mailbox/mailer code is in place and exercised via the Action Mailbox conductor;
+production ingress config stays commented). See the [[log]] build entries. The
+open items below were resolved at execution:
+
+## Open items / assumptions — resolved
+
+1. **Ticket status set** — **`open | pending | on_hold | resolved | closed`**
+   (default `open`). Went with the fuller lifecycle: `on_hold` = blocked on
+   us/a third party, `resolved` = fixed but not archived. `status` is a string
+   column, so this was an enum-only change. The dashboard lists **open** tickets
+   with links to the pending/on-hold queues; the index filters by any status.
+2. **License status set** — `active | suspended | expired | revoked` (as planned).
+3. **Inbound ticket creator** — **seeded `system` User** (`role: :system`,
+   `User.system`), stamped on inbound tickets *and* replies. The spine's
+   `records.creator_id` is NOT NULL, so a truly nil creator can never reach it —
+   `Reply.creator` therefore stays **required** (via `Recordable`); the nullable
+   `replies.creator_id` column is a latent affordance only. `User.people`
+   (non-system) guards first-run Setup so the seed doesn't block it.
+4. **License key uniqueness** — validation among `License.current` (as planned).
+5. **Message-ID dedup** — a bare unique index was **wrong** (successor versions
+   dup the row and repeat the id — the same trap as `license_key`). Shipped a
+   **partial** unique index scoped to `event = 'created'` on both
+   `tickets.message_id` and `replies.message_id`.
+6. **Attachments** — still Phase 2 (not built).
+7. **Inbound domain** — sourced from `ApplicationMailer.inbound_domain`
+   (credentials/ENV, dev default `support.example.com`); finalize with the SES
+   receipt rule.
+8. **Agent-initiated tickets** — an in-app ticket's first message is its opener,
+   same as an inbound email; no autoresponder (that's inbound-only).
+9. **Autoresponder** — `TicketMailer#acknowledgement` fires on inbound-opened
+   tickets (Basecamp-style 24/5 copy, branded Covenant); video link is a config
+   knob (`ApplicationMailer.support_video_url`).

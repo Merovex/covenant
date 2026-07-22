@@ -20,7 +20,7 @@ for canonical naming.
 - [database-and-scaling.md](database-and-scaling.md) — SQLite vs MariaDB; when to split app servers
 - [lexxy-and-active-record.md](lexxy-and-active-record.md) — Lexxy editor + Action Text coupling
 - [ses-migration-runbook.md](ses-migration-runbook.md) — Phase 0 (AWS + DNS) checklist for the SES/SNS email setup (ADR 0008); ported verbatim from Inkwell, Inkwell naming intact
-- [support-desk-plan.md](support-desk-plan.md) — self-contained build plan for License tracking + Ticket management (Customer/License/Ticket/Reply on the spine; inbound/outbound email; Pine theme); anchors ADRs 0009 & 0010
+- [support-desk-plan.md](support-desk-plan.md) — build plan for License tracking + Ticket management (Customer/License/Ticket/Reply on the spine; inbound/outbound email; Pine theme); anchors ADRs 0009 & 0010. **BUILT 2026-07-22** (SES integration deferred); open items resolved in-page
 
 ## Decisions (ADRs)
 
@@ -45,6 +45,7 @@ for canonical naming.
 - [app-shell](concepts/app-shell.md) — top-bar shell; responsive nav; the responsive-web vs Hotwire Native mobile fork
 - [css-architecture](concepts/css-architecture.md) — CUBE/BEM hybrid: layers, u- compositions/utilities, standard BEM blocks, exceptions via modifiers/data-attrs
 - [app-menu](concepts/app-menu.md) — the Basecamp-style jump menu (native popover + type-to-filter), ported from Inkwell
+- [inactive-features](concepts/inactive-features.md) — template sections (Posts/Forum/Chatroom) kept in code but hidden from nav; what's dormant and how to bring it back
 
 ## Entities
 
