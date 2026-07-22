@@ -83,6 +83,10 @@ Rails.application.routes.draw do
     end
   end
 
+  # Staff-only note on any notable (Ticket/License Record or Customer). The
+  # target rides in the form as a signed GlobalID, so one route serves all.
+  patch "note", to: "notes#update", as: :note
+
   # The chatroom — a single room for the whole install, so a singular
   # resource with no id. Lines are recordables; their member actions are
   # shallow on the Record id like everything else.

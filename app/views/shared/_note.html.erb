@@ -1,0 +1,13 @@
+<%# locals: (notable:) — a staff-only rich-text note editor for a Notable. %>
+<details class="note" <%= "open" if notable.note.body.present? %>>
+  <summary class="note__summary">
+    <%= inline_svg_tag "lucide/file-text.svg", class: "lucide", size: "14px" %>
+    Internal note <span class="u-text-muted">— staff only</span>
+  </summary>
+
+  <%= form_with model: notable, scope: :notable, url: note_path, method: :patch, class: "note__form" do |f| %>
+    <%= hidden_field_tag :sgid, notable.to_sgid(for: "note").to_s %>
+    <%= f.rich_textarea :note, placeholder: "Jot a few thoughts…" %>
+    <%= f.submit "Save note", class: "button button--small" %>
+  <% end %>
+</details>

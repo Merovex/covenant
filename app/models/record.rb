@@ -5,6 +5,7 @@
 # agnostic: host apps that need scoping add their own column on this spine.
 class Record < ApplicationRecord
   include Boostable
+  include Notable # a staff-only rich-text note on the stable identity (Ticket/License)
 
   # Content types that may live in the envelope; grows as recordables are added.
   RECORDABLE_TYPES = %w[ Post Comment ChatLine Message License Ticket Reply ]

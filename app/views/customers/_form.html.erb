@@ -18,11 +18,6 @@
     <%= f.text_field :company, class: "field__control", placeholder: "Analytical Engines Ltd." %>
   </div>
 
-  <div class="field">
-    <%= f.label :notes, class: "field__label" %>
-    <%= f.text_area :notes, class: "field__control", rows: 4 %>
-  </div>
-
   <div class="u-cluster">
     <%= f.submit customer.persisted? ? "Save changes" : "Add this customer", class: "button button--primary" %>
     <%= link_to "Never mind", (customer.persisted? ? customer_path(customer) : customers_path), class: "button" %>

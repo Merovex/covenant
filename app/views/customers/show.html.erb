@@ -17,9 +17,7 @@
   </p>
 </header>
 
-<% if @customer.notes.present? %>
-  <article class="u-flow u-margin-block-end"><%= simple_format @customer.notes %></article>
-<% end %>
+<%= render "shared/note", notable: @customer %>
 
 <section class="u-stack">
   <h2 class="u-text-strong">Licenses</h2>

@@ -1,0 +1,32 @@
+/*
+ * note — the staff-only <details> scratchpad shared by tickets, customers, and
+ * licenses (shared/_note). A collapsed disclosure holding a Lexxy editor and a
+ * save button; native <details> handles the toggle.
+ */
+@layer components {
+  .note {
+    margin-block-end: var(--u-pad);
+    padding: calc(var(--u-pad) / 2) var(--u-pad);
+    border: var(--border-size-1) solid var(--line);
+    border-radius: var(--radius-2);
+    /* Dull "sticky note" yellow: the canvas nudged toward a muted yellow, so it
+       sits one shade off the canvas in both themes (darker in light, lighter in
+       dark) and reads as note vs. non-note. */
+    background: color-mix(in oklab, var(--canvas) 86%, oklch(0.83 0.12 96));
+  }
+
+  .note__summary {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 4);
+    cursor: pointer;
+    user-select: none;
+    font-size: var(--font-size-0);
+    font-weight: var(--font-weight-6);
+    color: var(--ink-muted);
+  }
+
+  .note[open] .note__summary { margin-block-end: calc(var(--u-pad) / 2); }
+
+  .note__form { display: grid; gap: calc(var(--u-pad) / 2); }
+}

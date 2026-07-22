@@ -4,8 +4,8 @@ class SessionMailer < ApplicationMailer
   default from: -> { ApplicationMailer.transactional_from }
 
   SUBJECTS = {
-    sign_in: "Your Covenant sign-in link",
-    sign_up: "Welcome to Covenant — confirm your email"
+    sign_in: "Your Verkilo sign-in link",
+    sign_up: "Welcome to Verkilo — confirm your email"
   }.freeze
 
   # Emails a magic-link sign-in code. `plaintext` is the raw 8-letter code; it
