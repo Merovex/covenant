@@ -25,6 +25,34 @@
     margin-block-start: var(--u-pad);
   }
 
+  /* Context panel: the customer's other recent tickets, set between the header
+     and the opener. Bullet-less list, one compact row per ticket. */
+  .ticket__related {
+    margin-block-end: var(--u-pad);
+    padding-block-end: var(--u-pad);
+    border-block-end: var(--border-size-1) solid var(--line);
+  }
+  .ticket__related-heading {
+    margin: 0 0 calc(var(--u-pad) / 2);
+    font-size: var(--font-size-0);
+    font-weight: var(--font-weight-6);
+  }
+  .ticket__related-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: calc(var(--u-pad) / 4);
+  }
+  .ticket__related-item {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: calc(var(--u-pad) / 2);
+    font-size: var(--font-size-0);
+  }
+  .ticket__related-link { font-weight: var(--font-weight-6); }
+
   /* Quoted history from an inbound reply, folded into a native <details> — the
      browser handles the toggle, this is only cosmetics on the summary. */
   .comment__body details { margin-block-start: var(--u-pad); }

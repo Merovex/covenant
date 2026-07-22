@@ -23,6 +23,13 @@ class TicketsController < ApplicationController
   end
 
   def show
+    # Context panel: the customer's other tickets — their 3 most recent, or all
+    # opened in the last 30 days, whichever is the larger set.
+    others = Ticket.current
+      .where(customer_id: @ticket.customer_id).where.not(record_id: @record.id)
+      .includes(:record, :rich_text_content).order(record_id: :desc).limit(50).to_a
+    recent = others.select { |t| t.record.created_at >= 30.days.ago }
+    @related_tickets = recent.size >= 3 ? recent : others.first(3)
   end
 
   def new

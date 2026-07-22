@@ -40,6 +40,19 @@ class TicketsWorkflowTest < ActionDispatch::IntegrationTest
     assert_select "button", text: "Hold"
   end
 
+  test "show lists the customer's other tickets in the context panel, excluding itself" do
+    ticket = open_ticket # customers(:ada), title "Broken"
+    other = Ticket.new(customer: customers(:ada), title: "Another issue", creator: users(:system))
+    other.content = "<p>x</p>"
+    Record.originate(other)
+
+    get ticket_path(ticket.record)
+
+    assert_response :success
+    assert_select ".ticket__related-link", text: "Another issue"
+    assert_select ".ticket__related-link", text: "Broken", count: 0
+  end
+
   test "the Resolved button resolves and stamps resolved_at" do
     ticket = open_ticket
 

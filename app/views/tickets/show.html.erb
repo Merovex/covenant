@@ -34,6 +34,28 @@
   </p>
 </header>
 
+<%# Context: the customer's other recent tickets (3 most recent, or the last 30
+    days, whichever is larger). Subject links, then status, opened, and updated. %>
+<% if @related_tickets.any? %>
+  <section class="ticket__related" aria-label="Other tickets from this customer">
+    <h2 class="ticket__related-heading u-text-muted">
+      Also from <%= @ticket.customer.display_name %>
+    </h2>
+    <ul class="ticket__related-list">
+      <% @related_tickets.each do |t| %>
+        <li class="ticket__related-item">
+          <%= link_to t.title, ticket_path(t.record), class: "ticket__related-link" %>
+          <span class="status-pill status-pill--<%= t.status %>"><%= t.status.humanize %></span>
+          <span class="ticket__related-dates u-text-muted">
+            opened <time datetime="<%= t.record.created_at.iso8601 %>"><%= t.record.created_at.strftime("%b %-d, %Y") %></time>
+            · updated <time datetime="<%= t.updated_at.iso8601 %>"><%= t.updated_at.strftime("%b %-d, %Y") %></time>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
 <%# The opener — the customer's first message (or the agent's, if opened in-app). %>
 <article class="ticket__opener u-flow"><%= @ticket.content %></article>
 
