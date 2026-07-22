@@ -10,6 +10,18 @@ sources: [decisions/0008-email-relay-amazon-ses.md, decisions/0010-inbound-email
 
 # SES/SNS setup runbook — Covenant (verkilo.com)
 
+> **✅ DONE / LIVE (2026-07-22).** SES is fully set up and deployed to
+> `covenant.verkilo.com`. Outbound verified (magic-link DKIM `d=verkilo.com`,
+> DMARC pass) and inbound verified (a real `support@verkilo.com` email opened a
+> Ticket). This runbook is kept as the operational record + rebuild reference.
+> Loose ends live in [[overview]] Open threads: DMARC is still `p=quarantine`
+> (tighten to `reject` after clean reports), the `verkilo.com._report._dmarc`
+> authz on **merovex.com's Google DNS** still needs adding, and an S3 lifecycle
+> rule for `covenant-inbound-email` is optional hygiene. Two SES gotchas learned
+> the hard way: the `:ses` ingress wants a **singular** `subscribed_topic`, and
+> **SES rewrites the outbound Message-ID** (threading re-anchored on the
+> SES-assigned id — see [[0010-inbound-email-action-mailbox-ses]] erratum).
+
 Operational checklist for standing up Amazon SES for Covenant — **both**
 directions: outbound send ([[0008-email-relay-amazon-ses]]) and inbound support
 mail ([[0010-inbound-email-action-mailbox-ses]]). Most of this is AWS console +
