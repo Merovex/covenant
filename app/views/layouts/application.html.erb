@@ -14,8 +14,9 @@
     <%# PWA manifest (routes enabled in config/routes.rb) — develop-as-PWA, ADR 0005. %>
     <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="icon" href="/icon.png" type="image/png">
     <link rel="apple-touch-icon" href="/icon.png">
 
     <%# Lexxy editor + rendered rich-text content styles (gem asset, outside the :app bundle). %>
