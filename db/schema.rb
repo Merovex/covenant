@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_22_070004) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_22_180000) do
   create_table "action_mailbox_inbound_emails", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -231,6 +231,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_22_070004) do
     t.string "message_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "resolved_at"
     t.index ["creator_id"], name: "index_tickets_on_creator_id"
     t.index ["customer_id"], name: "index_tickets_on_customer_id"
     t.index ["message_id"], name: "index_tickets_on_opener_message_id", unique: true, where: "message_id IS NOT NULL AND event = 'created'"

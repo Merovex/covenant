@@ -13,6 +13,9 @@ class Tickets::RepliesController < ApplicationController
 
     if @reply.valid?
       Record.originate(@reply, parent: @record)
+      # Replying hands the ball back to the customer → the ticket is now Pending
+      # (waiting on them), unless it already is. A plain revise on the spine.
+      @record.revise(event: :updated, status: :pending) unless @ticket.pending?
       TicketMailer.with(ticket: @ticket, reply: @reply).reply.deliver_later
       redirect_to ticket_path(@record, anchor: "reply_#{@reply.record_id}"), notice: "Reply sent."
     else

@@ -95,9 +95,18 @@ class TicketsMailbox < ApplicationMailbox
       nil
     end
 
-    # Prefer the HTML part, fall back to plain text, then the bare body.
+    # Prefer the HTML part, fall back to plain text, then the bare body. Strip
+    # <style>/<script>/<head> and friends so an email's stylesheet doesn't leak
+    # into the ticket as visible text (e.g. HEY inlines a big <style> block).
+    # ActionText sanitizes whatever survives down to its allowed tags.
     def body_html
       part = mail.html_part || mail.text_part || mail
-      part.decoded.presence || "(no content)"
+      raw = part.decoded.presence
+      return "(no content)" unless raw
+      return raw unless part.mime_type == "text/html"
+
+      doc = Nokogiri::HTML(raw)
+      doc.css("style, script, head, title, meta, link").remove
+      doc.at_css("body")&.inner_html.presence || "(no content)"
     end
 end

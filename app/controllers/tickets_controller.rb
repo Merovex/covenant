@@ -42,12 +42,12 @@ class TicketsController < ApplicationController
   def edit
   end
 
-  # Handles both the inline status control (status only) and the edit form
-  # (title/opener): revise applies whatever changed and carries the rest
-  # forward, since non-rich-text attributes are real columns the successor
-  # dups and the opener body is preserved by Ticket#build_successor.
+  # Handles both the status buttons (status only) and the edit form
+  # (title/customer): revise applies whatever changed and carries the rest
+  # forward. The opener (`:content`) is deliberately excluded — the customer's
+  # original message is immutable; it's only ever set at creation time.
   def update
-    @ticket = @record.revise(event: :updated, **ticket_params.to_h.symbolize_keys)
+    @ticket = @record.revise(event: :updated, **ticket_params.except(:content).to_h.symbolize_keys)
 
     if @ticket.errors.none?
       redirect_to ticket_path(@record), notice: "Ticket updated."

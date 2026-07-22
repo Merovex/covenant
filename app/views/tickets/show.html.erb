@@ -3,13 +3,6 @@
 
 <%= render "shared/canvas_head", crumbs: [["Tickets", tickets_path], [@ticket.title, nil]],
       edit_href: edit_ticket_path(@record) do %>
-  <%# Status transitions — a plain revise on the ticket record. %>
-  <% Ticket.statuses.keys.each do |status| %>
-    <% next if @ticket.status == status %>
-    <%= button_to "Set #{status.humanize.downcase}", ticket_path(@record), method: :patch,
-          params: { ticket: { status: status } }, class: "menu__item", role: "menuitem" %>
-  <% end %>
-  <hr class="menu__separator">
   <%= button_to "Move to trash", ticket_path(@record), method: :delete, class: "menu__item", role: "menuitem",
         form: { data: { turbo_confirm: "Move this ticket to trash?" } } %>
 <% end %>
@@ -21,6 +14,24 @@
     · <%= link_to @ticket.customer.display_name, customer_path(@ticket.customer) %>
     <% if @ticket.from_address.present? %> · <%= @ticket.from_address %><% end %>
   </p>
+
+  <%# Agent status actions. "Pending" is set automatically when we reply to the
+      customer; "Closed" is set automatically a week after resolved
+      (Ticket::CloseResolvedJob). So the manual controls are just these. %>
+  <div class="u-cluster perma-header__actions">
+    <% unless @ticket.resolved? || @ticket.closed? %>
+      <%= button_to "Resolved", ticket_path(@record), method: :patch,
+            params: { ticket: { status: :resolved } }, class: "button button--primary" %>
+    <% end %>
+    <% unless @ticket.on_hold? || @ticket.resolved? || @ticket.closed? %>
+      <%= button_to "Hold", ticket_path(@record), method: :patch,
+            params: { ticket: { status: :on_hold } }, class: "button" %>
+    <% end %>
+    <% if @ticket.on_hold? || @ticket.resolved? || @ticket.closed? %>
+      <%= button_to "Reopen", ticket_path(@record), method: :patch,
+            params: { ticket: { status: :open } }, class: "button" %>
+    <% end %>
+  </div>
 </header>
 
 <%# The opener — the customer's first message (or the agent's, if opened in-app). %>

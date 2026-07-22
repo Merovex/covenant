@@ -45,4 +45,25 @@ class TicketTest < ActiveSupport::TestCase
 
     assert_equal [ inbound, outbound ].map(&:record_id), ticket.replies.map(&:record_id)
   end
+
+  test "resolving stamps resolved_at; leaving resolved clears it" do
+    ticket = open_ticket
+    assert_nil ticket.resolved_at
+
+    resolved = ticket.record.revise(event: :updated, status: "resolved")
+    assert resolved.resolved?
+    assert_not_nil resolved.resolved_at
+
+    reopened = ticket.record.revise(event: :updated, status: "open")
+    assert_nil reopened.resolved_at
+  end
+
+  test "a non-status edit carries resolved_at forward" do
+    ticket = open_ticket
+    resolved = ticket.record.revise(event: :updated, status: "resolved")
+
+    renamed = ticket.record.revise(event: :updated, title: "Renamed")
+    assert renamed.resolved?
+    assert_equal resolved.resolved_at.to_i, renamed.resolved_at.to_i
+  end
 end

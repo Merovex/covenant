@@ -26,6 +26,13 @@ class Ticket < ApplicationRecord
   def build_successor(event:, creator:, **changes)
     super.tap do |version|
       version.content = content.body unless changes.key?(:content)
+
+      # Track when the ticket entered `resolved` so Ticket::CloseResolvedJob can
+      # archive it a week later; clear it the instant it leaves resolved. An
+      # untouched status carries the timestamp forward (super already dup'd it).
+      if changes.key?(:status)
+        version.resolved_at = changes[:status].to_s == "resolved" ? Time.current : nil
+      end
     end
   end
 

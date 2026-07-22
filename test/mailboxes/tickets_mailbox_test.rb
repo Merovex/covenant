@@ -26,6 +26,21 @@ class TicketsMailboxTest < ActionMailbox::TestCase
     assert Customer.exists?(email: "new@example.com")
   end
 
+  test "inbound HTML strips style/script so email CSS doesn't leak into the body" do
+    html = '<html><head><style>.btn { color: #5522FA; } h1 { font-size: 1.3em; }</style>' \
+           '</head><body><p>Real message here.</p><script>alert(1)</script></body></html>'
+
+    receive_inbound_email_from_mail(
+      from: "ada@example.com", to: "support@support.example.com",
+      subject: "Styled", content_type: "text/html", body: html)
+
+    text = Ticket.current.last.content.to_plain_text
+    assert_includes text, "Real message here."
+    assert_not_includes text, "5522FA"
+    assert_not_includes text, "font-size"
+    assert_not_includes text, "alert(1)"
+  end
+
   test "a reply carrying our token threads onto the ticket" do
     ticket = open_ticket
     token = ticket.record.generate_token_for(:ticket_reply)

@@ -11,7 +11,11 @@
   <%= f.text_field :title, class: "composer__title", placeholder: "What's the issue?",
         "aria-label": "Title", required: true, autofocus: true %>
 
-  <%= f.rich_textarea :content, placeholder: "Describe the ticket…", "aria-label": "Opening message" %>
+  <%# The opener is the customer's original message — immutable. Writable only
+      when opening a ticket in-app (a new record); never on edit. %>
+  <% if ticket.record_id.blank? %>
+    <%= f.rich_textarea :content, placeholder: "Describe the ticket…", "aria-label": "Opening message" %>
+  <% end %>
 
   <div class="u-cluster">
     <%= f.submit ticket.record_id ? "Save changes" : "Open ticket", class: "button button--primary" %>

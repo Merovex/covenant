@@ -19,3 +19,8 @@ production:
   purge_trash:
     class: Record::PurgeTrashJob
     schedule: at 4am every day
+
+  # Close support tickets that have been resolved for a week.
+  close_resolved_tickets:
+    class: Ticket::CloseResolvedJob
+    schedule: at 3am every day
