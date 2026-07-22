@@ -61,4 +61,14 @@
     display: flex;
     justify-content: flex-end;
   }
+
+  /* Support-desk direction modifiers (ticket threads): the agent's outbound
+     replies get an accent-soft band + leading rule so the two sides of the
+     conversation read apart at a glance; inbound stays the plain comment row. */
+  .comment--outbound {
+    background: var(--accent-soft);
+    border-inline-start: var(--border-size-2) solid var(--accent);
+    padding-inline: var(--u-pad);
+    border-radius: var(--radius-ui);
+  }
 }

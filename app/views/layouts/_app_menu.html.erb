@@ -9,6 +9,9 @@
       <%= app_menu_card "Posts", posts_path, "file-text" %>
       <%= app_menu_card "Forum", messages_path, "messages-square" %>
       <%= app_menu_card "Chatroom", chatroom_path, "message-circle" %>
+      <% if Current.user&.domain_admin? %>
+        <%= app_menu_card "Tickets", tickets_path, "inbox" %>
+      <% end %>
     </nav>
 
     <input type="search" class="app-menu__search" placeholder="Search or jump to…"
@@ -24,6 +27,9 @@
         <%= app_menu_link "Forum", messages_path %>
         <%= app_menu_link "Chatroom", chatroom_path %>
         <% if Current.user&.domain_admin? %>
+          <%= app_menu_link "Tickets", tickets_path %>
+          <%= app_menu_link "Customers", customers_path %>
+          <%= app_menu_link "Licenses", licenses_path %>
           <%= app_menu_link "Categories", categories_path %>
         <% end %>
       </section>

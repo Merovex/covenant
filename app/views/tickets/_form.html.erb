@@ -1,0 +1,20 @@
+<%# locals: (ticket:, url:) %>
+<%= render "shared/error_summary", model: ticket %>
+
+<%= form_with model: ticket, url: url, class: "composer" do |f| %>
+  <span class="field__select">
+    <%= f.collection_select :customer_id, Customer.order(:name), :id, :display_name,
+          { include_blank: "Pick a customer" }, class: "field__control", "aria-label": "Customer", required: true %>
+    <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide", size: "16px" %>
+  </span>
+
+  <%= f.text_field :title, class: "composer__title", placeholder: "What's the issue?",
+        "aria-label": "Title", required: true, autofocus: true %>
+
+  <%= f.rich_textarea :content, placeholder: "Describe the ticket…", "aria-label": "Opening message" %>
+
+  <div class="u-cluster">
+    <%= f.submit ticket.record_id ? "Save changes" : "Open ticket", class: "button button--primary" %>
+    <%= link_to "Never mind", (ticket.record_id ? ticket_path(ticket.record) : tickets_path), class: "button" %>
+  </div>
+<% end %>

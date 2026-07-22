@@ -20,6 +20,7 @@ for canonical naming.
 - [database-and-scaling.md](database-and-scaling.md) — SQLite vs MariaDB; when to split app servers
 - [lexxy-and-active-record.md](lexxy-and-active-record.md) — Lexxy editor + Action Text coupling
 - [ses-migration-runbook.md](ses-migration-runbook.md) — Phase 0 (AWS + DNS) checklist for the SES/SNS email setup (ADR 0008); ported verbatim from Inkwell, Inkwell naming intact
+- [support-desk-plan.md](support-desk-plan.md) — self-contained build plan for License tracking + Ticket management (Customer/License/Ticket/Reply on the spine; inbound/outbound email; Pine theme); anchors ADRs 0009 & 0010
 
 ## Decisions (ADRs)
 
@@ -33,6 +34,8 @@ for canonical naming.
 | [0006](decisions/0006-record-recordable-generic-spine.md) | Record/Recordable — generic, tenant-agnostic content spine | accepted | 2026-07-03 |
 | [0007](decisions/0007-versioned-recordables.md) | Versioned recordables — event-tagged immutable versions | accepted | 2026-07-03 |
 | [0008](decisions/0008-email-relay-amazon-ses.md) | Email relay — adopt Amazon SES/SNS | accepted | 2026-07-10 |
+| [0009](decisions/0009-support-desk-customers-licenses-tickets.md) | Support desk — Customers, Licenses, Tickets, Replies | accepted | 2026-07-22 |
+| [0010](decisions/0010-inbound-email-action-mailbox-ses.md) | Inbound support email — Action Mailbox (SES/SNS) + Message-ID token routing | accepted | 2026-07-22 |
 
 ## Concepts
 

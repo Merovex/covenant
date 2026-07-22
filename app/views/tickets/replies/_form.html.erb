@@ -1,0 +1,17 @@
+<%# locals: (record:) %>
+<%# The agent reply composer — same .list__item shape as a reply row, so the %>
+<%# row it draws is the row the sent reply will occupy. Submitting emails the %>
+<%# customer and threads the outbound Reply under this ticket. %>
+<div class="list__item comment comment--composer" id="new_reply">
+  <span class="avatar list__avatar" aria-hidden="true"><%= avatar_content(Current.user) %></span>
+
+  <%= form_with model: Reply.new, url: ticket_replies_path(record), class: "comment__content comment__form",
+        data: { controller: "autosave", autosave_key_value: "Record/#{record.id}/reply" } do |f| %>
+    <%= f.rich_textarea :content, placeholder: "Write a reply to the customer…", "aria-label": "Reply", autofocus: false %>
+    <div class="u-cluster">
+      <%= f.submit "Send reply", class: "button button--primary" %>
+    </div>
+  <% end %>
+
+  <div class="list__action comment__actions"></div>
+</div>

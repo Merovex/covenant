@@ -7,10 +7,16 @@ class Record < ApplicationRecord
   include Boostable
 
   # Content types that may live in the envelope; grows as recordables are added.
-  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message ]
+  RECORDABLE_TYPES = %w[ Post Comment ChatLine Message License Ticket Reply ]
 
   delegated_type :recordable, types: RECORDABLE_TYPES, optional: true
   belongs_to :creator, class_name: "User", default: -> { Current.user }
+
+  # Reply-by-email routing token, minted per ticket Record and carried in the
+  # outbound Message-ID. Tamper-proof (signed with secret_key_base) and
+  # purpose-scoped. No expiry: customers reply weeks later. See TicketMailer /
+  # TicketsMailbox for the round-trip.
+  generates_token_for :ticket_reply
 
   # Self-referential threading: a comment's record will parent to the record it
   # comments on; same mechanism for any future child content.
@@ -25,6 +31,9 @@ class Record < ApplicationRecord
   scope :comments, -> { where(recordable_type: "Comment") }
   scope :chat_lines, -> { where(recordable_type: "ChatLine") }
   scope :messages, -> { where(recordable_type: "Message") }
+  scope :licenses, -> { where(recordable_type: "License") }
+  scope :tickets, -> { where(recordable_type: "Ticket") }
+  scope :replies, -> { where(recordable_type: "Reply") }
   scope :recently_active, -> { active.includes(:recordable).order(updated_at: :desc) }
 
   before_destroy :destroy_versions

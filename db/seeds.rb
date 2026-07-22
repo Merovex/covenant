@@ -19,3 +19,7 @@
 ].each do |icon, name|
   Category.find_or_create_by!(name: name) { |category| category.icon = icon }
 end
+
+# The support desk's system account — author of record for tickets/replies the
+# app ingests from email (inbound mail has no human author). Idempotent.
+User.system

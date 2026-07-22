@@ -1,0 +1,45 @@
+/*
+ * Status pill — a small, rounded state marker for tickets (open/pending/closed)
+ * and licenses (active/suspended/expired/revoked). Reads the shared semantic
+ * surface/ink token pairs (see 01-tokens.css), so it re-themes for free; the
+ * modifier just picks which pair. Neutral states fall back to the subtle fill.
+ *
+ * Structure (BEM): .status-pill (+ .status-pill--<state>)
+ */
+@layer components {
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--u-pad) / 4);
+    padding-inline: calc(var(--u-pad) / 1.5);
+    padding-block: calc(var(--u-pad) / 6);
+    border-radius: var(--radius-round, 999px);
+    font-size: var(--font-size-0);
+    font-weight: var(--font-weight-6);
+    line-height: 1.4;
+    text-transform: capitalize;
+    /* Neutral default: closed / expired sit here. */
+    background: var(--fill-subtle);
+    color: var(--ink-muted);
+  }
+
+  /* Live / healthy */
+  .status-pill--open,
+  .status-pill--active {
+    background: var(--success-surface);
+    color: var(--success-ink);
+  }
+
+  /* Needs attention / paused */
+  .status-pill--pending,
+  .status-pill--suspended {
+    background: var(--warning-surface);
+    color: var(--warning-ink);
+  }
+
+  /* Terminated hard */
+  .status-pill--revoked {
+    background: var(--danger-surface);
+    color: var(--danger-ink);
+  }
+}

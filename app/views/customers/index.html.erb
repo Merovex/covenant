@@ -1,0 +1,39 @@
+<% content_for :title, "Customers — Covenant" %>
+
+<%= render "shared/canvas_head", crumbs: [["Customers", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Customers</h1>
+  <div class="perma-header__content">
+    <nav class="perma-header__toolbar" aria-label="Actions">
+      <%= link_to new_customer_path, class: "button button--primary button--small" do %>
+        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New customer
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<% if @customers.any? %>
+  <ul class="list">
+    <% @customers.each do |customer| %>
+      <li class="list__item">
+        <%= link_to customer_path(customer), class: "list__body" do %>
+          <span class="list__titlerow">
+            <span class="list__title"><%= customer.name %></span>
+          </span>
+          <span class="list__meta">
+            <span class="list__byline"><%= customer.email %></span>
+            <%= customer.company %>
+          </span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/users.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No customers yet</p>
+    <p class="empty__text">Add one, or they'll be created automatically the first time they email support.</p>
+    <div class="empty__actions"><%= link_to "New customer", new_customer_path, class: "button button--primary" %></div>
+  </div>
+<% end %>

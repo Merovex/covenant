@@ -71,6 +71,18 @@ Rails.application.routes.draw do
   # unique (:id is always the Record id, same as everywhere else).
   resources :comments, only: %i[edit update destroy]
 
+  # Support desk — staff-facing (admin only). Customers are a plain lookup
+  # table; licenses and tickets are recordables on the spine (:id is the Record
+  # id, like posts). A ticket threads its replies underneath, mirroring a post
+  # and its comments; the reply composer posts an outbound agent message.
+  resources :customers
+  resources :licenses
+  resources :tickets do
+    scope module: :tickets do
+      resources :replies, only: %i[create]
+    end
+  end
+
   # The chatroom — a single room for the whole install, so a singular
   # resource with no id. Lines are recordables; their member actions are
   # shallow on the Record id like everything else.

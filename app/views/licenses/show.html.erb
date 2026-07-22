@@ -1,0 +1,22 @@
+<% content_for :title, "#{@license.product} — Covenant" %>
+
+<%= render "shared/canvas_head", crumbs: [["Licenses", licenses_path], [@license.product, nil]],
+      edit_href: edit_license_path(@record) do %>
+  <%= button_to "Move to trash", license_path(@record), method: :delete, class: "menu__item", role: "menuitem",
+        form: { data: { turbo_confirm: "Move this license to trash?" } } %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title"><%= @license.product %></h1>
+  <p class="perma-header__content u-text-muted">
+    <span class="status-pill status-pill--<%= @license.status %>"><%= @license.status %></span>
+    · <%= link_to @license.customer.display_name, customer_path(@license.customer) %>
+  </p>
+</header>
+
+<dl class="u-stack">
+  <div><dt class="u-text-strong">License key</dt><dd><code><%= @license.license_key %></code></dd></div>
+  <div><dt class="u-text-strong">Seats</dt><dd><%= @license.seats %></dd></div>
+  <div><dt class="u-text-strong">Issued</dt><dd><%= @license.issued_at ? l(@license.issued_at, format: :long) : "—" %></dd></div>
+  <div><dt class="u-text-strong">Expires</dt><dd><%= @license.expires_at ? l(@license.expires_at, format: :long) : "—" %></dd></div>
+</dl>

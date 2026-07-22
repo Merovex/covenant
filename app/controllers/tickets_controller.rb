@@ -1,0 +1,63 @@
+# Support tickets on the spine — the agent's queue. Index lists current live
+# tickets; show is the opener plus the reply thread and a composer. Immutable
+# like every recordable: status changes and edits are versions, delete trashes
+# the history. Admin only.
+class TicketsController < ApplicationController
+  include TicketScoped
+  skip_before_action :set_record, only: %i[index new create]
+  before_action -> { authorize! Ticket, to: :manage }
+
+  def index
+    @tickets = Ticket.current.includes(:record, :customer, :rich_text_content)
+      .order(Arel.sql("tickets.record_id DESC"))
+    @reply_counts = Record.active.replies
+      .where(parent_id: @tickets.map(&:record_id)).group(:parent_id).count
+  end
+
+  def show
+  end
+
+  def new
+    @ticket = Ticket.new(customer_id: params[:customer_id])
+  end
+
+  # An agent opening a ticket in-app: the first message is the opener, exactly
+  # like a customer's inbound email. No autoresponder — that's inbound only.
+  def create
+    @ticket = Ticket.new(ticket_params.merge(event: :created))
+
+    if @ticket.valid?
+      Record.originate(@ticket)
+      redirect_to ticket_path(@ticket.record), notice: "Ticket opened."
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  def edit
+  end
+
+  # Handles both the inline status control (status only) and the edit form
+  # (title/opener): revise applies whatever changed and carries the rest
+  # forward, since non-rich-text attributes are real columns the successor
+  # dups and the opener body is preserved by Ticket#build_successor.
+  def update
+    @ticket = @record.revise(event: :updated, **ticket_params.to_h.symbolize_keys)
+
+    if @ticket.errors.none?
+      redirect_to ticket_path(@record), notice: "Ticket updated."
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @record.trash
+    redirect_to tickets_path, notice: "Ticket moved to trash."
+  end
+
+  private
+    def ticket_params
+      params.expect(ticket: [ :customer_id, :title, :status, :content ])
+    end
+end

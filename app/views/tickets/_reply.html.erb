@@ -1,0 +1,26 @@
+<%# locals: (reply:) %>
+<%# One message in the ticket thread — same .list__item / .comment shape as a %>
+<%# post comment, with a direction modifier (inbound = customer, outbound = %>
+<%# agent) so the two sides read differently. The frame id doubles as the %>
+<%# copy-link anchor. %>
+<% inbound = reply.inbound? %>
+<%= turbo_frame_tag "reply_#{reply.record_id}", class: "list__item comment comment--#{reply.direction}" do %>
+  <span class="avatar list__avatar" aria-hidden="true">
+    <% if reply.creator %>
+      <%= avatar_content(reply.creator) %>
+    <% else %>
+      <%= reply.from_address.to_s.scan(/[[:alpha:]]+/).first(2).map { |w| w[0] }.join.upcase %>
+    <% end %>
+  </span>
+
+  <div class="comment__content">
+    <p class="byline u-text-muted">
+      <span class="u-text-strong"><%= inbound ? reply.from_address : (reply.creator&.display_name || "Support") %></span>
+      · <time datetime="<%= reply.record.created_at.iso8601 %>"><%= reply.record.created_at.strftime("%b %-d at %H:%M") %></time>
+      · <span class="badge"><%= inbound ? "Customer" : "Agent" %></span>
+    </p>
+    <div class="comment__body u-flow"><%= reply.content %></div>
+  </div>
+
+  <div class="list__action comment__actions"></div>
+<% end %>

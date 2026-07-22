@@ -12,3 +12,10 @@ admin:
   email_address: admin@example.com
   name: Ada Admin
   role: domain_admin
+
+# The support desk's author-of-record for email-ingested content. Matches
+# User.system's lookup (role: system), so tests don't create a second one.
+system:
+  email_address: support@support.example.com
+  name: Covenant Support
+  role: system

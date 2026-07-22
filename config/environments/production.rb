@@ -1,6 +1,14 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
+  # Support desk inbound mail (Action Mailbox via aws-actionmailbox-ses). Left
+  # off until SES is wired up — see docs/decisions/0010-inbound-email-action-mailbox-ses.md
+  # and the SES inbound runbook. When enabling: set the ingress, list the
+  # approved SNS topic ARN(s), and point delivery at SES for outbound.
+  # config.action_mailbox.ingress = :ses
+  # config.action_mailbox.ses.subscribed_topics = [ Rails.application.credentials.dig(:support, :sns_topic_arn) ]
+  # config.action_mailer.delivery_method = :ses_v2
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.

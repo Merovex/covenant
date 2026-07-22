@@ -1,0 +1,43 @@
+<% content_for :title, "Tickets — Covenant" %>
+
+<%= render "shared/canvas_head", crumbs: [["Tickets", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Tickets</h1>
+  <div class="perma-header__content">
+    <nav class="perma-header__toolbar" aria-label="Actions">
+      <%= link_to new_ticket_path, class: "button button--primary button--small" do %>
+        <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New ticket
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<% if @tickets.any? %>
+  <ul class="list">
+    <% @tickets.each do |ticket| %>
+      <li class="list__item">
+        <%= link_to ticket_path(ticket.record), class: "list__body" do %>
+          <span class="list__titlerow">
+            <span class="list__title"><%= ticket.title %></span>
+            <span class="status-pill status-pill--<%= ticket.status %>"><%= ticket.status %></span>
+          </span>
+          <span class="list__meta">
+            <span class="list__byline"><%= ticket.customer.display_name %></span>
+            <%= ticket.content.to_plain_text.to_s.truncate(120) %>
+          </span>
+        <% end %>
+        <% if @reply_counts[ticket.record_id].to_i.positive? %>
+          <span class="list__count" aria-label="<%= @reply_counts[ticket.record_id] %> replies"><%= @reply_counts[ticket.record_id] %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No tickets yet</p>
+    <p class="empty__text">Open one for a customer, or they'll arrive automatically by email.</p>
+    <div class="empty__actions"><%= link_to "New ticket", new_ticket_path, class: "button button--primary" %></div>
+  </div>
+<% end %>

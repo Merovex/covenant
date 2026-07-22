@@ -18,8 +18,20 @@ class User < ApplicationRecord
   validate :acceptable_avatar
 
   # :member is the baseline; :domain_admin is granted to the first user ever (via
-  # the Setup flow) and administers the whole install.
-  enum :role, { member: "member", domain_admin: "domain_admin" }, default: :member
+  # the Setup flow) and administers the whole install. :system is the app
+  # itself — the author of record for content the support desk ingests from
+  # email (inbound tickets/replies have no human author). It never signs in.
+  enum :role, { member: "member", domain_admin: "domain_admin", system: "system" }, default: :member
+
+  # The seeded system account. Stamped as the creator on inbound-ingested
+  # tickets and replies so the parent Record (creator NOT NULL) always has an
+  # author. Idempotent: safe to call before seeds have run (e.g. in tests).
+  def self.system
+    find_or_create_by!(role: :system) do |user|
+      user.email_address = "support@#{ApplicationMailer.inbound_domain}"
+      user.name = "Covenant Support"
+    end
+  end
 
   normalizes :email_address, with: -> { it.strip.downcase }
 

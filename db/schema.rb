@@ -10,7 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_03_600002) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_22_070004) do
+  create_table "action_mailbox_inbound_emails", force: :cascade do |t|
+    t.integer "status", default: 0, null: false
+    t.string "message_id", null: false
+    t.string "message_checksum", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["message_id", "message_checksum"], name: "index_action_mailbox_inbound_emails_uniqueness", unique: true
+  end
+
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -92,6 +101,34 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_03_600002) do
     t.index ["record_id", "id"], name: "index_comments_on_record_id_and_id"
   end
 
+  create_table "customers", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "email", null: false
+    t.string "company"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_customers_on_email", unique: true
+  end
+
+  create_table "licenses", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.integer "customer_id", null: false
+    t.string "license_key", null: false
+    t.string "product", null: false
+    t.integer "seats", default: 1, null: false
+    t.datetime "issued_at"
+    t.datetime "expires_at"
+    t.string "status", default: "active", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id"], name: "index_licenses_on_creator_id"
+    t.index ["customer_id"], name: "index_licenses_on_customer_id"
+    t.index ["record_id", "id"], name: "index_licenses_on_record_id_and_id"
+  end
+
   create_table "messages", force: :cascade do |t|
     t.string "title", null: false
     t.string "status", default: "drafted", null: false
@@ -146,6 +183,23 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_03_600002) do
     t.index ["recordable_type", "recordable_id"], name: "index_records_on_recordable_type_and_recordable_id", unique: true
   end
 
+  create_table "replies", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.integer "creator_id"
+    t.string "event", default: "created", null: false
+    t.string "direction", null: false
+    t.string "from_address", null: false
+    t.string "to_address", null: false
+    t.string "subject"
+    t.string "message_id"
+    t.string "in_reply_to"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id"], name: "index_replies_on_creator_id"
+    t.index ["message_id"], name: "index_replies_on_ingest_message_id", unique: true, where: "message_id IS NOT NULL AND event = 'created'"
+    t.index ["record_id", "id"], name: "index_replies_on_record_id_and_id"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "ip_address"
@@ -166,6 +220,24 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_03_600002) do
     t.index ["user_id"], name: "index_sign_in_codes_on_user_id"
   end
 
+  create_table "tickets", force: :cascade do |t|
+    t.integer "record_id", null: false
+    t.integer "creator_id", null: false
+    t.string "event", default: "created", null: false
+    t.integer "customer_id", null: false
+    t.string "title", null: false
+    t.string "status", default: "open", null: false
+    t.string "from_address"
+    t.string "message_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id"], name: "index_tickets_on_creator_id"
+    t.index ["customer_id"], name: "index_tickets_on_customer_id"
+    t.index ["message_id"], name: "index_tickets_on_opener_message_id", unique: true, where: "message_id IS NOT NULL AND event = 'created'"
+    t.index ["record_id", "id"], name: "index_tickets_on_record_id_and_id"
+    t.index ["record_id"], name: "index_tickets_on_record_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email_address", null: false
     t.string "name"
@@ -179,6 +251,9 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_03_600002) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "boosts", "records"
   add_foreign_key "boosts", "users", column: "creator_id"
+  add_foreign_key "licenses", "customers"
+  add_foreign_key "licenses", "records"
+  add_foreign_key "licenses", "users", column: "creator_id"
   add_foreign_key "messages", "bodies"
   add_foreign_key "messages", "categories"
   add_foreign_key "messages", "records"
@@ -188,6 +263,11 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_03_600002) do
   add_foreign_key "posts", "users", column: "creator_id"
   add_foreign_key "records", "records", column: "parent_id"
   add_foreign_key "records", "users", column: "creator_id"
+  add_foreign_key "replies", "records"
+  add_foreign_key "replies", "users", column: "creator_id"
   add_foreign_key "sessions", "users"
   add_foreign_key "sign_in_codes", "users"
+  add_foreign_key "tickets", "customers"
+  add_foreign_key "tickets", "records"
+  add_foreign_key "tickets", "users", column: "creator_id"
 end

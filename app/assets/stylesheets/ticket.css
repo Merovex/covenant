@@ -1,0 +1,18 @@
+/*
+ * Ticket — the support-desk thread view. The opener is a plain article; the
+ * reply thread reuses .comment / .list / .composer wholesale (see comment.css),
+ * so this file only holds what's genuinely ticket-specific: the opener block
+ * and the inbound/outbound lean on the reuse rows.
+ *
+ * Structure (BEM): .ticket__opener; reply rows are
+ * .list__item.comment.comment--inbound | .comment--outbound (comment.css).
+ */
+@layer components {
+  /* The opener — the customer's (or agent's) first message, set apart from the
+     header above and the reply thread below. */
+  .ticket__opener {
+    padding-block-end: var(--u-pad);
+    margin-block-end: var(--u-pad);
+    border-block-end: var(--border-size-1) solid var(--line);
+  }
+}

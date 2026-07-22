@@ -6,7 +6,7 @@
  *
  * Color model: semantic tokens (--ink, --canvas, --site-bg, --line, --accent)
  * that components read. The site background is driven by a rotating account tint
- * (--tint); dark mode overrides the structural neutrals. The brand is a teal
+ * (--tint); dark mode overrides the structural neutrals. The brand is a pine (low-chroma teal)
  * family (hue 175). See docs/concepts/theme-background-colors.md for the full
  * rationale. Tint values are the Tailwind v4 palette's -100 shades (olive, taupe,
  * mauve, mist, zinc), written as OKLCH literals since there's no Tailwind build.
@@ -44,22 +44,22 @@
   --code-selector:    #22863a;
   --code-variable:    #e36209;
 
-  /* --- brand: Tailwind v4 teal, chroma scaled ×0.85 (−15% desaturated) --- */
-  --brand-deep:   oklch(27.7% 0.039 192.524); /* teal-950 −15%C — deep bg, sidebars, strong text */
-  --brand-strong: oklch(43.7% 0.066 188.216); /* teal-800 −15%C — solid fill for white text (AAA) */
-  --brand-muted:  oklch(51.1% 0.082 186.391); /* teal-700 −15%C — secondary borders, inactive states */
-  --brand:        oklch(70.4% 0.119 182.503); /* teal-500 −15%C — key interactive: buttons, progress */
+  /* --- brand: Pine — Tailwind v4 teal lightness/hue, chroma dropped ~75% (greyer) --- */
+  --brand-deep:   oklch(27.7% 0.008 192.524); /* pine-950 — deep bg, sidebars, strong text */
+  --brand-strong: oklch(43.7% 0.024 188.216); /* pine-800 — solid fill for white text (AAA) */
+  --brand-muted:  oklch(51.1% 0.029 186.391); /* pine-700 — secondary borders, inactive states */
+  --brand:        oklch(70.4% 0.034 182.503); /* pine-500 — key interactive: buttons, progress */
 
   --accent: var(--brand);                   /* interactive color the components read */
-  --accent-ink: var(--brand-deep);          /* dark teal text reads on the brand fill */
-  --accent-soft: oklch(95.3% 0.043 180.801); /* teal-100 −15%C — subtle fill: hover / selected */
-  --menu-context-bg: oklch(44.1% 0.06 190);  /* teal-800-ish — AAA with near-white ink */
-  --menu-context-ink: oklch(98% 0.01 182);   /* near-white text on the dark teal */
+  --accent-ink: var(--brand-deep);          /* deep pine text reads on the brand fill */
+  --accent-soft: oklch(95.3% 0.003 180.801); /* pine-100 — subtle fill: hover / selected */
+  --menu-context-bg: oklch(44.1% 0.024 190); /* pine-800-ish — AAA with near-white ink */
+  --menu-context-ink: oklch(98% 0.004 182);  /* near-white text on the dark pine */
 
   /* AAA (7:1) foregrounds — muted metadata intentionally stays AA */
-  --link: oklch(44.1% 0.10 186);             /* dark teal link on the canvas (underlined) */
-  --ink-on-soft: oklch(42.1% 0.08 186);      /* text on --accent-soft: avatar initials, accent badge */
-  --brand-text: oklch(44.1% 0.10 186);       /* teal-tinted body text at 7:1 on the canvas */
+  --link: oklch(44.1% 0.030 186);            /* deep pine link on the canvas (underlined) */
+  --ink-on-soft: oklch(42.1% 0.028 186);     /* text on --accent-soft: avatar initials, accent badge */
+  --brand-text: oklch(44.1% 0.030 186);      /* pine-tinted body text at 7:1 on the canvas */
 
   /* semantic surfaces + AAA inks (light pills; shared by badges + alerts) */
   --success-surface: oklch(94% 0.06 150);
@@ -114,14 +114,14 @@
   --code-punctuation: #c9d1d9;
   --code-selector:    #7ee787;
   --code-variable:    #ffa657;
-  --accent: var(--brand);                   /* same vibrant teal pops on dark */
+  --accent: var(--brand);                   /* same pine accent on dark */
   --accent-ink: var(--brand-deep);
-  --accent-soft: oklch(38.6% 0.054 188.416); /* teal-900 −15%C */
-  --menu-context-bg: oklch(75.9% 0.12 182);       /* teal-400-ish — AAA with teal-950 ink */
-  --menu-context-ink: var(--brand-deep);          /* dark teal text on the light teal */
-  --link: oklch(75.6% 0.12 182);                  /* light teal link on the dark canvas */
-  --ink-on-soft: oklch(88.7% 0.12 182);           /* light teal on teal-900 (avatar, accent badge) */
-  --brand-text: oklch(75.6% 0.12 182);            /* teal-tinted body text at 7:1 (dark) */
+  --accent-soft: oklch(38.6% 0.019 188.416); /* pine-900 */
+  --menu-context-bg: oklch(75.9% 0.04 182);       /* pine-400-ish — AAA with pine-950 ink */
+  --menu-context-ink: var(--brand-deep);          /* deep pine text on the light pine */
+  --link: oklch(75.6% 0.04 182);                  /* light pine link on the dark canvas */
+  --ink-on-soft: oklch(88.7% 0.04 182);           /* light pine on pine-900 (avatar, accent badge) */
+  --brand-text: oklch(75.6% 0.04 182);            /* pine-tinted body text at 7:1 (dark) */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -144,11 +144,11 @@
     --code-variable:    #ffa657;
     --accent: var(--brand);
     --accent-ink: var(--brand-deep);
-    --accent-soft: oklch(38.6% 0.054 188.416); /* teal-900 −15%C */
-    --menu-context-bg: oklch(75.9% 0.12 182);
+    --accent-soft: oklch(38.6% 0.019 188.416); /* pine-900 */
+    --menu-context-bg: oklch(75.9% 0.04 182);
     --menu-context-ink: var(--brand-deep);
-    --link: oklch(75.6% 0.12 182);
-    --ink-on-soft: oklch(88.7% 0.12 182);
-    --brand-text: oklch(75.6% 0.12 182);
+    --link: oklch(75.6% 0.04 182);
+    --ink-on-soft: oklch(88.7% 0.04 182);
+    --brand-text: oklch(75.6% 0.04 182);
   }
 }

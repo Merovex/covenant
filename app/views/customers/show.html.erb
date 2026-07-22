@@ -1,0 +1,63 @@
+<% content_for :title, "#{@customer.name} — Covenant" %>
+
+<%= render "shared/canvas_head", crumbs: [["Customers", customers_path], [@customer.name, nil]],
+      edit_href: edit_customer_path(@customer) do %>
+  <%= link_to "New license", new_license_path(customer_id: @customer.id), class: "menu__item", role: "menuitem" %>
+  <%= link_to "New ticket", new_ticket_path(customer_id: @customer.id), class: "menu__item", role: "menuitem" %>
+  <hr class="menu__separator">
+  <%= button_to "Delete customer", customer_path(@customer), method: :delete, class: "menu__item", role: "menuitem",
+        form: { data: { turbo_confirm: "Delete #{@customer.name}? Only possible with no licenses or tickets." } } %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title"><%= @customer.name %></h1>
+  <p class="perma-header__content u-text-muted">
+    <%= mail_to @customer.email %>
+    <% if @customer.company.present? %> · <span class="u-text-strong"><%= @customer.company %></span><% end %>
+  </p>
+</header>
+
+<% if @customer.notes.present? %>
+  <article class="u-flow u-margin-block-end"><%= simple_format @customer.notes %></article>
+<% end %>
+
+<section class="u-stack">
+  <h2 class="u-text-strong">Licenses</h2>
+  <% if @licenses.any? %>
+    <ul class="list">
+      <% @licenses.each do |license| %>
+        <li class="list__item">
+          <%= link_to license_path(license.record), class: "list__body" do %>
+            <span class="list__titlerow">
+              <span class="list__title"><%= license.product %></span>
+              <span class="status-pill status-pill--<%= license.status %>"><%= license.status %></span>
+            </span>
+            <span class="list__meta"><span class="list__byline"><%= license.license_key %></span> <%= pluralize(license.seats, "seat") %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="u-text-muted">No licenses. <%= link_to "Add one", new_license_path(customer_id: @customer.id) %>.</p>
+  <% end %>
+</section>
+
+<section class="u-stack u-margin-block-start">
+  <h2 class="u-text-strong">Tickets</h2>
+  <% if @tickets.any? %>
+    <ul class="list">
+      <% @tickets.each do |ticket| %>
+        <li class="list__item">
+          <%= link_to ticket_path(ticket.record), class: "list__body" do %>
+            <span class="list__titlerow">
+              <span class="list__title"><%= ticket.title %></span>
+              <span class="status-pill status-pill--<%= ticket.status %>"><%= ticket.status %></span>
+            </span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="u-text-muted">No tickets. <%= link_to "Open one", new_ticket_path(customer_id: @customer.id) %>.</p>
+  <% end %>
+</section>

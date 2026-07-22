@@ -1,0 +1,41 @@
+<% content_for :title, "#{@ticket.title} — Covenant" %>
+<% replies = @ticket.replies %>
+
+<%= render "shared/canvas_head", crumbs: [["Tickets", tickets_path], [@ticket.title, nil]],
+      edit_href: edit_ticket_path(@record) do %>
+  <%# Status transitions — a plain revise on the ticket record. %>
+  <% unless @ticket.open? %>
+    <%= button_to "Reopen", ticket_path(@record), method: :patch, params: { ticket: { status: "open" } }, class: "menu__item", role: "menuitem" %>
+  <% end %>
+  <% unless @ticket.pending? %>
+    <%= button_to "Mark pending", ticket_path(@record), method: :patch, params: { ticket: { status: "pending" } }, class: "menu__item", role: "menuitem" %>
+  <% end %>
+  <% unless @ticket.closed? %>
+    <%= button_to "Close ticket", ticket_path(@record), method: :patch, params: { ticket: { status: "closed" } }, class: "menu__item", role: "menuitem" %>
+  <% end %>
+  <hr class="menu__separator">
+  <%= button_to "Move to trash", ticket_path(@record), method: :delete, class: "menu__item", role: "menuitem",
+        form: { data: { turbo_confirm: "Move this ticket to trash?" } } %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title"><%= @ticket.title %></h1>
+  <p class="perma-header__content u-text-muted">
+    <span class="status-pill status-pill--<%= @ticket.status %>"><%= @ticket.status %></span>
+    · <%= link_to @ticket.customer.display_name, customer_path(@ticket.customer) %>
+    <% if @ticket.from_address.present? %> · <%= @ticket.from_address %><% end %>
+  </p>
+</header>
+
+<%# The opener — the customer's first message (or the agent's, if opened in-app). %>
+<article class="ticket__opener u-flow"><%= @ticket.content %></article>
+
+<section class="comments" aria-label="Replies">
+  <% if replies.any? %>
+    <h2 class="comments__heading"><%= pluralize(replies.size, "reply") %></h2>
+  <% end %>
+  <div class="list">
+    <%= render partial: "tickets/reply", collection: replies, as: :reply %>
+    <%= render "tickets/replies/form", record: @record %>
+  </div>
+</section>

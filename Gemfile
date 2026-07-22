@@ -74,3 +74,5 @@ gem "inline_svg", "~> 1.10"
 gem "lexxy", "~> 0.9.22"
 
 gem "diff-lcs", "~> 2.0"
+
+gem "aws-actionmailbox-ses", "~> 0.2.0"

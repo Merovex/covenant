@@ -1,0 +1,11 @@
+<% content_for :title, "Edit #{@ticket.title} — Covenant" %>
+
+<%= render "shared/canvas_head", crumbs: [["Tickets", tickets_path], [@ticket.title, ticket_path(@record)], ["Edit", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Edit ticket</h1>
+</header>
+
+<div class="u-center u-center-narrow">
+  <%= render "form", ticket: @ticket, url: ticket_path(@record) %>
+</div>
