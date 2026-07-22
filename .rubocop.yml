@@ -1,6 +1,12 @@
 # Omakase Ruby styling for Rails
 inherit_gem: { rubocop-rails-omakase: rubocop.yml }
 
+# docs/schema.rb is a generated copy of the DB schema (like db/schema.rb,
+# which RuboCop excludes by default) — don't lint it.
+AllCops:
+  Exclude:
+    - "docs/schema.rb"
+
 # Overwrite or add rules to create your own house style
 #
 # # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`

@@ -14,5 +14,4 @@ class BoostTest < ActiveSupport::TestCase
       2.times { records(:kickoff).boosts.create!(creator: users(:alice), content: "🙌") }
     end
   end
-
 end

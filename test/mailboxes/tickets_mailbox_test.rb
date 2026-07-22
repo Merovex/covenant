@@ -27,8 +27,8 @@ class TicketsMailboxTest < ActionMailbox::TestCase
   end
 
   test "inbound HTML strips style/script so email CSS doesn't leak into the body" do
-    html = '<html><head><style>.btn { color: #5522FA; } h1 { font-size: 1.3em; }</style>' \
-           '</head><body><p>Real message here.</p><script>alert(1)</script></body></html>'
+    html = "<html><head><style>.btn { color: #5522FA; } h1 { font-size: 1.3em; }</style>" \
+           "</head><body><p>Real message here.</p><script>alert(1)</script></body></html>"
 
     receive_inbound_email_from_mail(
       from: "ada@example.com", to: "support@support.example.com",
