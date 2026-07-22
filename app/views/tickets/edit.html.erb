@@ -6,6 +6,4 @@
   <h1 class="perma-header__title">Edit ticket</h1>
 </header>
 
-<div class="u-center u-center-narrow">
-  <%= render "form", ticket: @ticket, url: ticket_path(@record) %>
-</div>
+<%= render "form", ticket: @ticket, url: ticket_path(@record) %>

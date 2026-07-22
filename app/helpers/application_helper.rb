@@ -26,6 +26,15 @@ module ApplicationHelper
     filter == "all" ? tickets_path : tickets_path(status: filter)
   end
 
+  # A timestamp that reads "3 days ago" within the past week and the plain date
+  # beyond it, always with the exact date/time on hover. Returns a <time>.
+  def relative_time(time)
+    return unless time
+    label = time > 1.week.ago ? "#{time_ago_in_words(time)} ago" : time.strftime("%b %-d, %Y")
+    tag.time(label, datetime: time.iso8601,
+      title: time.strftime("%b %-d, %Y at %-I:%M %p"), class: "u-timestamp")
+  end
+
   # The standard "who · when" line under list rows (comments, chat lines).
   def byline(creator, time, edited: false)
     tag.p class: "byline u-text-muted" do

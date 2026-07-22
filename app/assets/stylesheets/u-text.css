@@ -10,4 +10,8 @@
   .u-text-center { text-align: center; }
   .u-text-nowrap { white-space: nowrap; }
   .u-text-balance { text-wrap: balance; }
+
+  /* Relative timestamp (e.g. "3 days ago") whose title tooltip holds the exact
+     date/time — hint that it's hoverable. */
+  .u-timestamp { cursor: help; text-decoration: underline dotted; text-underline-offset: 2px; }
 }

@@ -2,11 +2,21 @@
 <%= render "shared/error_summary", model: ticket %>
 
 <%= form_with model: ticket, url: url, class: "composer" do |f| %>
-  <span class="field__select">
-    <%= f.collection_select :customer_id, Customer.order(:name), :id, :display_name,
-          { include_blank: "Pick a customer" }, class: "field__control", "aria-label": "Customer", required: true %>
-    <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide", size: "16px" %>
-  </span>
+  <%# Typeahead customer picker: a native <datalist> filters by name as you type;
+      the picked name resolves to customer_id in the hidden field (JS controller). %>
+  <div data-controller="customer-picker">
+    <input type="text" list="customer-options" class="field__control"
+           placeholder="Pick a customer…" aria-label="Customer" autocomplete="off"
+           value="<%= ticket.customer&.display_name %>"
+           data-customer-picker-target="input"
+           data-action="input->customer-picker#resolve change->customer-picker#resolve">
+    <datalist id="customer-options" data-customer-picker-target="list">
+      <% Customer.order(:name).each do |c| %>
+        <option value="<%= c.display_name %>" data-id="<%= c.id %>"></option>
+      <% end %>
+    </datalist>
+    <%= f.hidden_field :customer_id, data: { customer_picker_target: "hidden" } %>
+  </div>
 
   <%= f.text_field :title, class: "composer__title", placeholder: "What's the issue?",
         "aria-label": "Title", required: true, autofocus: true %>

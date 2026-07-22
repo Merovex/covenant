@@ -47,8 +47,8 @@
           <%= link_to t.title, ticket_path(t.record), class: "ticket__related-link" %>
           <span class="status-pill status-pill--<%= t.status %>"><%= t.status.humanize %></span>
           <span class="ticket__related-dates u-text-muted">
-            opened <time datetime="<%= t.record.created_at.iso8601 %>"><%= t.record.created_at.strftime("%b %-d, %Y") %></time>
-            · updated <time datetime="<%= t.updated_at.iso8601 %>"><%= t.updated_at.strftime("%b %-d, %Y") %></time>
+            opened <%= relative_time(t.record.created_at) %>
+            · updated <%= relative_time(t.updated_at) %>
           </span>
         </li>
       <% end %>
