@@ -13,24 +13,21 @@
   </div>
 </header>
 
+<nav class="u-cluster u-margin-block-end" aria-label="Filter by status">
+  <%= link_to "All", tickets_path,
+        class: "button button--small #{@status.nil? ? "button--primary" : "button--ghost"}" %>
+  <% Ticket.statuses.keys.each do |status| %>
+    <%= link_to tickets_path(status: status),
+          class: "button button--small #{@status == status ? "button--primary" : "button--ghost"}" do %>
+      <%= status.humanize %> (<%= @status_counts[status].to_i %>)
+    <% end %>
+  <% end %>
+</nav>
+
 <% if @tickets.any? %>
   <ul class="list">
     <% @tickets.each do |ticket| %>
-      <li class="list__item">
-        <%= link_to ticket_path(ticket.record), class: "list__body" do %>
-          <span class="list__titlerow">
-            <span class="list__title"><%= ticket.title %></span>
-            <span class="status-pill status-pill--<%= ticket.status %>"><%= ticket.status %></span>
-          </span>
-          <span class="list__meta">
-            <span class="list__byline"><%= ticket.customer.display_name %></span>
-            <%= ticket.content.to_plain_text.to_s.truncate(120) %>
-          </span>
-        <% end %>
-        <% if @reply_counts[ticket.record_id].to_i.positive? %>
-          <span class="list__count" aria-label="<%= @reply_counts[ticket.record_id] %> replies"><%= @reply_counts[ticket.record_id] %></span>
-        <% end %>
-      </li>
+      <%= render "tickets/row", ticket: ticket, reply_count: @reply_counts[ticket.record_id].to_i %>
     <% end %>
   </ul>
 <% else %>

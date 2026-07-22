@@ -23,21 +23,28 @@
     color: var(--ink-muted);
   }
 
-  /* Live / healthy */
-  .status-pill--open,
+  /* Active / needs an agent (ticket open) — reads as the brand accent. */
+  .status-pill--open {
+    background: var(--accent-soft);
+    color: var(--ink-on-soft);
+  }
+
+  /* Resolved / live (ticket resolved, license active) */
+  .status-pill--resolved,
   .status-pill--active {
     background: var(--success-surface);
     color: var(--success-ink);
   }
 
-  /* Needs attention / paused */
+  /* Waiting / paused (waiting on the customer; license suspended) */
   .status-pill--pending,
   .status-pill--suspended {
     background: var(--warning-surface);
     color: var(--warning-ink);
   }
 
-  /* Terminated hard */
+  /* Blocked / terminated hard (on hold, license revoked) */
+  .status-pill--on_hold,
   .status-pill--revoked {
     background: var(--danger-surface);
     color: var(--danger-ink);

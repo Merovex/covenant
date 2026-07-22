@@ -1,9 +1,9 @@
-<% content_for :title, "Settings — Alcovo" %>
+<% content_for :title, "My Profile — Covenant" %>
 
-<%= render "shared/canvas_head", crumbs: [["Settings", nil]] %>
+<%= render "shared/canvas_head", crumbs: [["My Profile", nil]] %>
 
 <header class="perma-header">
-  <h1 class="perma-header__title">Settings</h1>
+  <h1 class="perma-header__title">My Profile</h1>
 </header>
 
 <div class="settings u-center u-center-narrow">
@@ -36,7 +36,7 @@
       <div class="field">
         <%= f.text_field :name, class: "field__control", placeholder: "Display name",
               "aria-label": "Display name" %>
-        <p class="field__hint u-text-muted">Shown on your posts and comments; leave blank to go by your email address.</p>
+        <p class="field__hint u-text-muted">Shown on the tickets and replies you handle; leave blank to go by your email address.</p>
       </div>
       <%= f.submit "Save", class: "button button--primary" %>
     <% end %>

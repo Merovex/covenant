@@ -2,7 +2,7 @@
  * .list — a list of summary rows (avatar + linked title/meta + optional trailing
  * count). Render as <ul class="list"> / <ol class="list"> with .list__item rows
  * (partial: shared/_list_item). Adapted from Basecamp's article-list; colors use
- * Alcovo tokens. Structure (BEM):
+ * Covenant tokens. Structure (BEM):
  *   .list__item > .list__avatar (.avatar) + a.list__body(.list__titlerow > .list__title
  *   + badge · .list__meta > .list__byline) + .list__count
  */

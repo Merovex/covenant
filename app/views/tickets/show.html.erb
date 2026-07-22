@@ -4,14 +4,10 @@
 <%= render "shared/canvas_head", crumbs: [["Tickets", tickets_path], [@ticket.title, nil]],
       edit_href: edit_ticket_path(@record) do %>
   <%# Status transitions — a plain revise on the ticket record. %>
-  <% unless @ticket.open? %>
-    <%= button_to "Reopen", ticket_path(@record), method: :patch, params: { ticket: { status: "open" } }, class: "menu__item", role: "menuitem" %>
-  <% end %>
-  <% unless @ticket.pending? %>
-    <%= button_to "Mark pending", ticket_path(@record), method: :patch, params: { ticket: { status: "pending" } }, class: "menu__item", role: "menuitem" %>
-  <% end %>
-  <% unless @ticket.closed? %>
-    <%= button_to "Close ticket", ticket_path(@record), method: :patch, params: { ticket: { status: "closed" } }, class: "menu__item", role: "menuitem" %>
+  <% Ticket.statuses.keys.each do |status| %>
+    <% next if @ticket.status == status %>
+    <%= button_to "Set #{status.humanize.downcase}", ticket_path(@record), method: :patch,
+          params: { ticket: { status: status } }, class: "menu__item", role: "menuitem" %>
   <% end %>
   <hr class="menu__separator">
   <%= button_to "Move to trash", ticket_path(@record), method: :delete, class: "menu__item", role: "menuitem",
@@ -21,7 +17,7 @@
 <header class="perma-header">
   <h1 class="perma-header__title"><%= @ticket.title %></h1>
   <p class="perma-header__content u-text-muted">
-    <span class="status-pill status-pill--<%= @ticket.status %>"><%= @ticket.status %></span>
+    <span class="status-pill status-pill--<%= @ticket.status %>"><%= @ticket.status.humanize %></span>
     · <%= link_to @ticket.customer.display_name, customer_path(@ticket.customer) %>
     <% if @ticket.from_address.present? %> · <%= @ticket.from_address %><% end %>
   </p>

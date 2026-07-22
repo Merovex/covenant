@@ -1,5 +1,5 @@
 /*
- * Alcovo stylesheet architecture — read me.
+ * Covenant stylesheet architecture — read me.
  *
  * This project uses Propshaft with `stylesheet_link_tag :app`, which emits one
  * <link> per file in this directory, in ALPHABETICAL filename order. We do NOT

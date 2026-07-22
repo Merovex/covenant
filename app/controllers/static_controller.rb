@@ -1,6 +1,6 @@
 class StaticController < ApplicationController
-  # Styleguide/demo pages are public dev references — no sign in required.
-  allow_unauthenticated_access
+  # Styleguide/demo pages sit behind sign-in like the rest of the app; the whole
+  # site is authenticated (only the session/setup/signup flows are public).
 
   # Living styleguide. Renders every standard element/component so we can build
   # and eyeball HTML + CSS in isolation. See app/views/static/theme.html.erb.

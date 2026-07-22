@@ -51,7 +51,7 @@
           <%= link_to ticket_path(ticket.record), class: "list__body" do %>
             <span class="list__titlerow">
               <span class="list__title"><%= ticket.title %></span>
-              <span class="status-pill status-pill--<%= ticket.status %>"><%= ticket.status %></span>
+              <span class="status-pill status-pill--<%= ticket.status %>"><%= ticket.status.humanize %></span>
             </span>
           <% end %>
         </li>

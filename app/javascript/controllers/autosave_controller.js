@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 
-const PREFIX = "alcovo/autosave/"
+const PREFIX = "covenant/autosave/"
 const MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000 // stale drafts sweep out after 30 days
 const DEBOUNCE_MS = 300
 

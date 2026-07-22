@@ -43,6 +43,13 @@ module Authentication
     session.delete(:return_to_after_authenticating) || root_url
   end
 
+  # Dev convenience: stash a just-minted sign-in code in the flash so the
+  # "check your email" page can show it without opening a mailbox. No-op in
+  # every other environment, so production never leaks a code.
+  def expose_dev_sign_in_code(code)
+    flash[:sign_in_code] = code.plaintext if code && Rails.env.development?
+  end
+
   def start_new_session_for(user)
     user.sessions.create!(user_agent: request.user_agent, ip_address: request.remote_ip).tap do |session|
       Current.session = session

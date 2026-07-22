@@ -6,11 +6,10 @@
      data-controller="app-menu" data-action="toggle->app-menu#toggled">
   <div class="app-menu__panel">
     <nav class="app-menu__grid" aria-label="Quick navigation">
-      <%= app_menu_card "Posts", posts_path, "file-text" %>
-      <%= app_menu_card "Forum", messages_path, "messages-square" %>
-      <%= app_menu_card "Chatroom", chatroom_path, "message-circle" %>
       <% if Current.user&.domain_admin? %>
         <%= app_menu_card "Tickets", tickets_path, "inbox" %>
+        <%= app_menu_card "Customers", customers_path, "users" %>
+        <%= app_menu_card "Licenses", licenses_path, "key" %>
       <% end %>
     </nav>
 
@@ -21,27 +20,13 @@
            data-action="input->app-menu#filter keydown->app-menu#keydown">
 
     <div class="app-menu__results" id="app-menu-results" role="listbox" data-app-menu-target="results">
-      <section class="app-menu__group" data-app-menu-target="group">
-        <h3 class="app-menu__header">Go to</h3>
-        <%= app_menu_link "Posts", posts_path %>
-        <%= app_menu_link "Forum", messages_path %>
-        <%= app_menu_link "Chatroom", chatroom_path %>
-        <% if Current.user&.domain_admin? %>
+      <% if Current.user&.domain_admin? %>
+        <section class="app-menu__group" data-app-menu-target="group">
+          <h3 class="app-menu__header">Go to</h3>
+          <%= app_menu_link "Dashboard", root_path %>
           <%= app_menu_link "Tickets", tickets_path %>
           <%= app_menu_link "Customers", customers_path %>
           <%= app_menu_link "Licenses", licenses_path %>
-          <%= app_menu_link "Categories", categories_path %>
-        <% end %>
-      </section>
-
-      <% recents = app_menu_recents %>
-      <% if recents.any? %>
-        <section class="app-menu__group" data-app-menu-target="group">
-          <h3 class="app-menu__header">Recent</h3>
-          <% recents.each do |record| %>
-            <%= app_menu_link app_menu_record_label(record), app_menu_record_path(record),
-                  kind: record.recordable_type, icon: app_menu_icon(record.recordable_type) %>
-          <% end %>
         </section>
       <% end %>
 

@@ -7,12 +7,10 @@
 <%# pulled out of the popover (Basecamp-style). %>
 <div class="canvas__head">
   <nav class="breadcrumb" aria-label="Breadcrumb">
-    <%# Every trail starts at home — a house, not the app name. %>
-    <%= link_to root_path, class: "breadcrumb__item breadcrumb__item--home", "aria-label": "Home" do %>
-      <%= inline_svg_tag "lucide/house.svg", class: "lucide", size: "16px" %>
-    <% end %>
-    <% crumbs.each do |label, href| %>
-      <span class="breadcrumb__sep" aria-hidden="true">/</span>
+    <%# Home lives in the header, so the trail starts at the first crumb — no %>
+    <%# house, and separators only sit *between* crumbs (no leading slash). %>
+    <% crumbs.each_with_index do |(label, href), i| %>
+      <% if i.positive? %><span class="breadcrumb__sep" aria-hidden="true">/</span><% end %>
       <% if href %>
         <%= link_to label, href, class: "breadcrumb__item" %>
       <% else %>

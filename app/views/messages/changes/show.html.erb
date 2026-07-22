@@ -1,4 +1,4 @@
-<% content_for :title, "Changes: #{@message.title} — Alcovo" %>
+<% content_for :title, "Changes: #{@message.title} — Covenant" %>
 
 <%= render "shared/canvas_head", crumbs: [["Forum", messages_path], [@message.title, message_path(@record)], ["Change Log", message_events_path(@record)], ["Change", nil]] do %>
   <%= link_to "Change Log", message_events_path(@record), class: "menu__item", role: "menuitem" %>

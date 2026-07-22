@@ -8,8 +8,13 @@ class TicketsController < ApplicationController
   before_action -> { authorize! Ticket, to: :manage }
 
   def index
-    @tickets = Ticket.current.includes(:record, :customer, :rich_text_content)
-      .order(Arel.sql("tickets.record_id DESC"))
+    @status = params[:status] if params[:status].in?(Ticket.statuses.keys)
+    @status_counts = Ticket.current.group(:status).count
+
+    scope = Ticket.current.includes(:record, :customer, :rich_text_content)
+    scope = scope.where(status: @status) if @status
+    @tickets = scope.order(Arel.sql("tickets.record_id DESC"))
+
     @reply_counts = Record.active.replies
       .where(parent_id: @tickets.map(&:record_id)).group(:parent_id).count
   end

@@ -16,6 +16,7 @@ class SetupsController < ApplicationController
   def create
     @setup = Setup.new(setup_params)
     if @setup.save
+      expose_dev_sign_in_code(@setup.sign_in_code)
       redirect_to new_session_path(sent: true)
     else
       render :new, status: :unprocessable_entity
@@ -24,8 +25,10 @@ class SetupsController < ApplicationController
 
   private
 
+  # The seeded system account isn't a real user, so it doesn't close the setup
+  # window — only a signed-in-capable person does.
   def require_no_users
-    redirect_to root_path if User.exists?
+    redirect_to root_path if User.people.exists?
   end
 
   def setup_params

@@ -2,6 +2,16 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-07-22] build | App renamed Covenant; authed dashboard home; support-only nav
+- Renamed the app **Alcovo → Covenant** across `app/`, `config/` (incl. `module Covenant`), the autosave localStorage prefix, and Kamal `deploy.yml` service/image/volume. `docs/` left as historical record (the plan already notes Alcovo ≡ Covenant). No `Alcovo::` constant was referenced anywhere, so the module rename was inert.
+- **Whole site behind auth**: dropped `allow_unauthenticated_access` from the styleguide (`StaticController`); only session/setup/signup stay public. Root is now a real **dashboard** (`DashboardController#show`), not the styleguide.
+- **Dashboard** = admin's support-desk home: top row of "new licenses" stat cards (Today / This week / This month / This year, counted off `Record.active.licenses.created_at`) + section tiles (Tickets/Customers/Licenses). Non-admins get nothing. Hid Posts/Forum/Chatroom (+ Categories, recents) from the app menu — this install is a support desk.
+- **Dev sign-in**: `User#send_magic_link` now returns the `SignInCode`; `Authentication#expose_dev_sign_in_code` stashes its plaintext in the flash **only in development**, and the "check your email" page shows it with a one-click "Sign in now" link — no mailbox needed. Production never sees it.
+- **Bootstrap fix**: the seeded system user was making `/setup` think the install already had users. Added `User.people` (non-system) and keyed `SetupsController#require_no_users` + `SessionsController#new` off it, so first-run setup still works.
+- Tests: +dashboard integration + updated auth-flow (root now redirects unauthenticated); suite 200 green, RuboCop clean.
+- pages touched: [[log]]
+- refs: app/controllers/{dashboard,sessions,setups,static}_controller.rb, app/controllers/concerns/authentication.rb, app/models/{user,setup}.rb, app/views/dashboard/*, config/{application,routes,deploy}
+
 ## [2026-07-22] build | Support desk implemented (SES integration deferred)
 - Built [[support-desk-plan]] end to end minus live SES. Schema: `customers` (plain), `licenses`/`tickets`/`replies` (recordables). Models include `Recordable` directly (immutable, `mutable? = false`); `Ticket`/`Reply` carry `has_rich_text :content` and copy the body forward in `build_successor` like `Comment`. `Record` gained the three types + scopes + `generates_token_for :ticket_reply`; `Ticket#replies` mirrors `Record#comments`.
 - Resolved open items at execution: **ticket status** = open|pending|closed (no "resolved"); **inbound creator** = seeded system `User` (`role: :system`, `User.system`) stamped on inbound tickets/replies — the spine's `records.creator_id` is NOT NULL, so a truly nil creator can't reach it (the plan's "nullable creator" is a column-only affordance, `Reply.creator` stays required via `Recordable`); **license-key uniqueness** = validation among `License.current`; **Message-ID dedup** = *partial* unique index scoped to `event = 'created'` (successor versions repeat the id, so a bare unique index was wrong — the same trap as `license_key`).

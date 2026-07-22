@@ -1,4 +1,4 @@
-<% content_for :title, "Version: #{@version.title} — Alcovo" %>
+<% content_for :title, "Version: #{@version.title} — Covenant" %>
 
 <%= render "shared/canvas_head", crumbs: [["Posts", posts_path], [@post.title, post_path(@record)], ["Change Log", post_events_path(@record)], ["Version", nil]] do %>
   <%= link_to "Change Log", post_events_path(@record), class: "menu__item", role: "menuitem" %>

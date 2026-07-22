@@ -1,7 +1,7 @@
 class SessionMailer < ApplicationMailer
   SUBJECTS = {
-    sign_in: "Your Alcovo sign-in link",
-    sign_up: "Welcome to Alcovo — confirm your email"
+    sign_in: "Your Covenant sign-in link",
+    sign_up: "Welcome to Covenant — confirm your email"
   }.freeze
 
   # Emails a magic-link sign-in code. `plaintext` is the raw 8-letter code; it

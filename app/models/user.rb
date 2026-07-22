@@ -23,6 +23,11 @@ class User < ApplicationRecord
   # email (inbound tickets/replies have no human author). It never signs in.
   enum :role, { member: "member", domain_admin: "domain_admin", system: "system" }, default: :member
 
+  # Real, sign-in-capable people — everyone except the non-interactive system
+  # account. Bootstrap/sign-in checks key off this so the seeded system user
+  # never counts as "the install already has users".
+  scope :people, -> { where.not(role: :system) }
+
   # The seeded system account. Stamped as the creator on inbound-ingested
   # tickets and replies so the parent Record (creator NOT NULL) always has an
   # author. Idempotent: safe to call before seeds have run (e.g. in tests).
@@ -46,10 +51,12 @@ class User < ApplicationRecord
   end
 
   # Generate a fresh single-use code and email its magic link. `purpose`
-  # (:sign_in / :sign_up) tunes the email copy.
+  # (:sign_in / :sign_up) tunes the email copy. Returns the SignInCode so
+  # callers can surface its plaintext (dev only — see Authentication).
   def send_magic_link(purpose: :sign_in)
-    code = sign_in_codes.create!
-    SessionMailer.magic_link(self, code.plaintext, purpose:).deliver_later
+    sign_in_codes.create!.tap do |code|
+      SessionMailer.magic_link(self, code.plaintext, purpose:).deliver_later
+    end
   end
 
   private

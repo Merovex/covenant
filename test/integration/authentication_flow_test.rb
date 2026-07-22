@@ -4,8 +4,13 @@ class AuthenticationFlowTest < ActionDispatch::IntegrationTest
   include ActionMailer::TestHelper
 
   test "protected pages redirect to sign in when unauthenticated" do
-    get root_path # public styleguide is allowed
-    assert_response :success
+    # The whole site is behind auth now — even the root dashboard and the
+    # styleguide. Only the session/setup/signup flows are public.
+    get root_path
+    assert_redirected_to new_session_path
+
+    get theme_path
+    assert_redirected_to new_session_path
   end
 
   test "sign-in screen uses the centered auth layout, not the app canvas" do

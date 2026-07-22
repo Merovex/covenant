@@ -6,7 +6,7 @@ class User::SettingsController < ApplicationController
 
   def update
     if Current.user.update(settings_params)
-      redirect_to user_settings_path, notice: "Settings saved."
+      redirect_to user_settings_path, notice: "Profile saved."
     else
       render :show, status: :unprocessable_entity
     end

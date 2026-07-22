@@ -9,14 +9,14 @@ class Setup
 
   validates :email_address, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
 
-  attr_reader :user
+  attr_reader :user, :sign_in_code
 
   def save
     return false unless valid?
 
     @user = User.new(email_address: email_address, role: :domain_admin)
     if @user.save
-      @user.send_magic_link(purpose: :sign_up)
+      @sign_in_code = @user.send_magic_link(purpose: :sign_up)
       true
     else
       errors.merge!(@user.errors)

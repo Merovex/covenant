@@ -1,4 +1,4 @@
-<% content_for :title, "#{@message.title} — Alcovo" %>
+<% content_for :title, "#{@message.title} — Covenant" %>
 
 <%= render "shared/canvas_head", crumbs: [["Forum", messages_path], [@message.title, nil]], menu: false do %>
   <%= render "composer_actions", message: @message %>

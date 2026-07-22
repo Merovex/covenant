@@ -112,7 +112,6 @@ Rails.application.routes.draw do
   get "list-view" => "static#list_view", as: :list_view
   get "item-view" => "static#item_view", as: :item_view
 
-  # Defines the root path route ("/")
-  # Temporary: point root at the styleguide until there's a real home page.
-  root "static#theme"
+  # Defines the root path route ("/") — the authenticated home dashboard.
+  root "dashboard#show"
 end

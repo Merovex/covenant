@@ -6,7 +6,7 @@
   <% end %>
   <button type="button" class="bar__brand app-menu-trigger" popovertarget="app-menu"
           aria-haspopup="dialog" aria-label="Open menu">
-    Alcovo
+    Covenant
     <%= inline_svg_tag "lucide/chevron-down.svg", class: "lucide app-menu-trigger__chevron", size: "16px" %>
   </button>
   <%= render "layouts/app_menu" %>
@@ -20,8 +20,7 @@
   <button type="button" class="avatar" popovertarget="user-menu" aria-haspopup="menu" aria-label="Account menu"><%= avatar_content(Current.user) %></button>
 
   <div class="menu menu--user" popover id="user-menu" role="menu">
-    <button type="button" class="menu__item" role="menuitem">My Profile</button>
-    <%= link_to "Settings", user_settings_path, class: "menu__item", role: "menuitem" %>
+    <%= link_to "My Profile", user_settings_path, class: "menu__item", role: "menuitem" %>
     <hr class="menu__separator">
     <div class="menu__row">
       <button type="button" class="menu__item theme-toggle" role="menuitem" data-mode="light"

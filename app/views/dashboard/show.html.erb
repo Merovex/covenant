@@ -1,0 +1,42 @@
+<% content_for :title, "Dashboard — Covenant" %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Welcome, <%= Current.user.display_name %></h1>
+  <p class="perma-header__content u-text-muted">Here's how the support desk is doing.</p>
+</header>
+
+<% if Current.user.domain_admin? %>
+  <h2 class="dashboard__section-title">New licenses</h2>
+  <div class="dashboard__stats">
+    <% @license_stats.each do |label, count| %>
+      <%= render "stat", label: label, count: count %>
+    <% end %>
+  </div>
+
+  <div class="dashboard__tickets-head">
+    <h2 class="dashboard__section-title">Open tickets</h2>
+    <nav class="u-cluster" aria-label="Other ticket queues">
+      <%= link_to "Pending (#{@status_counts["pending"].to_i})", tickets_path(status: "pending"),
+            class: "button button--small button--ghost" %>
+      <%= link_to "On hold (#{@status_counts["on_hold"].to_i})", tickets_path(status: "on_hold"),
+            class: "button button--small button--ghost" %>
+      <%= link_to "All tickets", tickets_path, class: "button button--small button--ghost" %>
+    </nav>
+  </div>
+
+  <% if @open_tickets.any? %>
+    <ul class="list">
+      <% @open_tickets.each do |ticket| %>
+        <%= render "tickets/row", ticket: ticket %>
+      <% end %>
+    </ul>
+  <% else %>
+    <div class="empty">
+      <span class="empty__icon"><%= inline_svg_tag "lucide/inbox.svg", class: "lucide", size: "40px" %></span>
+      <p class="empty__title">No open tickets</p>
+      <p class="empty__text">Nothing needs an agent right now.</p>
+    </div>
+  <% end %>
+<% else %>
+  <p class="u-text-muted">There's nothing here for you yet.</p>
+<% end %>

@@ -1,0 +1,42 @@
+/*
+ * Dashboard — the authenticated home at root. A row of at-a-glance stat cards
+ * (new-license counts) over the open-tickets list. Stat cards compose .card;
+ * the ticket list reuses .list (see tickets/_row). Only the stat number and the
+ * two small layout helpers are new here.
+ *
+ * Structure (BEM): .dashboard__section-title,
+ *   .dashboard__stats > .card.dashboard__stat > .dashboard__stat-number,
+ *   .dashboard__tickets-head (title + other-queue links)
+ */
+@layer components {
+  .dashboard__section-title {
+    margin-block: var(--size-6) var(--u-pad);
+    font-size: var(--font-size-2);
+    font-weight: var(--font-weight-7);
+  }
+
+  /* At-a-glance counters. Auto-fit so four cards sit in a row on wide screens
+     and wrap gracefully on narrow ones. */
+  .dashboard__stats {
+    display: grid;
+    gap: var(--u-pad);
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  }
+
+  .dashboard__stat-number {
+    font-size: var(--font-size-7);
+    font-weight: var(--font-weight-8);
+    line-height: 1;
+    color: var(--accent);
+  }
+
+  /* Open-tickets header: section title on the left, other-queue links on the
+     right, wrapping under the title on narrow screens. */
+  .dashboard__tickets-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--u-pad);
+  }
+}

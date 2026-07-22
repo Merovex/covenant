@@ -9,7 +9,10 @@ class Ticket < ApplicationRecord
   belongs_to :customer
   has_rich_text :content              # the customer's opening email
 
-  enum :status, %w[ open pending closed ].index_by(&:itself), default: :open
+  # open     → needs an agent          resolved → fixed, not yet archived
+  # pending  → waiting on the customer  closed   → done / archived
+  # on_hold  → blocked on us / a third party
+  enum :status, %w[ open pending on_hold resolved closed ].index_by(&:itself), default: :open
 
   validates :title, presence: true
 

@@ -6,6 +6,17 @@
     <div class="card__body u-stack">
       <p class="u-text-muted">If that address has an account, we've sent a sign-in link. Open it on this device, or enter the code from the email below.</p>
 
+      <% if flash[:sign_in_code] %>
+        <%# Development only (see Authentication#expose_dev_sign_in_code): the %>
+        <%# real code, so there's no need to open the letter_opener mailbox. %>
+        <div class="alert alert--info" role="status">
+          <p><strong>Dev mode.</strong> Your sign-in code is
+            <code><%= SignInCode.format(flash[:sign_in_code]) %></code>.</p>
+          <%= link_to "Sign in now", verify_session_path(code: flash[:sign_in_code]),
+                class: "button button--primary u-full-width", style: "margin-block-start: var(--u-pad);" %>
+        </div>
+      <% end %>
+
       <%= form_with url: verify_session_path, method: :get do |f| %>
         <div class="field">
           <span class="field__label" id="code-label">Sign-in code</span>
@@ -28,7 +39,7 @@
       <%= link_to "Use a different email", new_session_path, class: "u-text-muted" %>
     </div>
   <% else %>
-    <header class="card__header"><span class="card__title">Sign in to Alcovo</span></header>
+    <header class="card__header"><span class="card__title">Sign in to Covenant</span></header>
     <div class="card__body u-stack">
       <p class="u-text-muted">Enter your email and we'll send you a magic link — no password needed.</p>
 
