@@ -70,6 +70,10 @@ class TicketsMailbox < ApplicationMailbox
         creator: User.system)
       reply.content = body_html
       Record.originate(reply, parent: ticket.record)
+
+      # The customer answered → the ball is back in our court. A pending ticket
+      # (waiting on them) reopens so it resurfaces in the agent's queue.
+      ticket.record.revise(event: :updated, status: :open) if ticket.pending?
     end
 
     def open_ticket
@@ -95,10 +99,12 @@ class TicketsMailbox < ApplicationMailbox
       nil
     end
 
-    # Prefer the HTML part, fall back to plain text, then the bare body. Strip
-    # <style>/<script>/<head> and friends so an email's stylesheet doesn't leak
-    # into the ticket as visible text (e.g. HEY inlines a big <style> block).
-    # ActionText sanitizes whatever survives down to its allowed tags.
+    # Prefer the HTML part, fall back to plain text, then the bare body, and clean
+    # it for storage: drop <style>/<script>/<head> (so an inlined stylesheet
+    # doesn't leak in as text), fold the quoted reply history into a collapsed
+    # <details>, and strip the sender's presentational cruft (HEY ships Trix's
+    # .trix-content/.message-content wrappers + inline styles). ActionText
+    # sanitizes whatever survives.
     def body_html
       part = mail.html_part || mail.text_part || mail
       raw = part.decoded.presence
@@ -107,6 +113,34 @@ class TicketsMailbox < ApplicationMailbox
 
       doc = Nokogiri::HTML(raw)
       doc.css("style, script, head, title, meta, link").remove
+      collapse_quoted_reply(doc)
+      doc.css("*").each { |el| %w[class style id].each { |a| el.remove_attribute(a) } }
       doc.at_css("body")&.inner_html.presence || "(no content)"
+    end
+
+    # Fold the quoted history a client appends on reply into a collapsed
+    # <details> instead of deleting it — the thread already shows the history,
+    # but keeping it (hidden) preserves context and any interleaved replying.
+    # Replies are top-posted, so the history trails: cut at the "On … wrote:"
+    # attribution, else the *last* top-level quote block, and move that node plus
+    # everything after it into the disclosure. A blockquote the customer wrote
+    # *above* the divider stays visible. <details> toggles natively — no JS.
+    def collapse_quoted_reply(doc)
+      body = doc.at_css("body") or return
+      children = body.element_children
+
+      cut = children.find { |el| el.text.to_s.match?(/\bwrote:\s*\z/i) }
+      cut ||= children.reverse.find { |el| el.matches?("blockquote, .gmail_quote") || el.at_css("blockquote, .gmail_quote") }
+      return unless cut
+
+      quoted = [ cut ]
+      quoted << quoted.last.next_element while quoted.last.next_element
+
+      details = Nokogiri::XML::Node.new("details", doc)
+      summary = Nokogiri::XML::Node.new("summary", doc)
+      summary.content = "Quoted history"
+      details.add_child(summary)
+      quoted.each { |node| details.add_child(node) }
+      body.add_child(details)
     end
 end

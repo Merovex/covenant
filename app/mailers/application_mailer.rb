@@ -1,5 +1,5 @@
 class ApplicationMailer < ActionMailer::Base
-  default from: -> { "Covenant Support <support@#{ApplicationMailer.inbound_domain}>" }
+  default from: -> { "Verkilo Support <support@#{ApplicationMailer.inbound_domain}>" }
   layout "mailer"
 
   # The domain the support desk receives mail on (SES inbound receipt rule) and

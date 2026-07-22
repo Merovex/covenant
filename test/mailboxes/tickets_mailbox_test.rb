@@ -74,6 +74,56 @@ class TicketsMailboxTest < ActionMailbox::TestCase
     assert ticket.replies.last.inbound?
   end
 
+  test "the trailing quoted history folds into a collapsed <details>, kept not deleted" do
+    html = "<html><body>" \
+           "<div>My fresh answer.</div>" \
+           "<div>On July 22, 2026, Verkilo Support wrote:</div>" \
+           "<blockquote><p>the previous message</p></blockquote>" \
+           "</body></html>"
+
+    receive_inbound_email_from_mail(from: "ada@example.com", to: "support@support.example.com",
+      subject: "Re: Broken", content_type: "text/html", body: html)
+
+    doc = Nokogiri::HTML(Ticket.current.last.content.body.to_html)
+    details = doc.at_css("details")
+    assert details, "expected the quoted history folded into a <details>"
+    assert_includes details.text, "the previous message"     # kept, just collapsed
+    assert_not_includes details.text, "My fresh answer."      # the new reply stays visible
+  end
+
+  test "a blockquote the customer wrote above the divider stays visible" do
+    html = "<html><body>" \
+           "<blockquote><p>my intentional quote</p></blockquote>" \
+           "<div>my point about it</div>" \
+           "<div>On July 22, 2026, Verkilo Support wrote:</div>" \
+           "<blockquote><p>old history</p></blockquote>" \
+           "</body></html>"
+
+    receive_inbound_email_from_mail(from: "ada@example.com", to: "support@support.example.com",
+      subject: "Re: Broken", content_type: "text/html", body: html)
+
+    details = Nokogiri::HTML(Ticket.current.last.content.body.to_html).at_css("details")
+    assert_includes details.text, "old history"
+    assert_not_includes details.text, "my intentional quote"
+    assert_not_includes details.text, "my point about it"
+  end
+
+  test "a customer reply reopens a pending ticket" do
+    ticket = open_ticket
+    ticket.record.revise(event: :updated, status: "pending")
+
+    ses_mid = "0100abcd-0000@email.amazonses.com"
+    outbound = Reply.new(direction: :outbound, from_address: "support@x", to_address: @customer.email,
+      message_id: ses_mid, creator: users(:admin))
+    outbound.content = "<p>hi</p>"
+    Record.originate(outbound, parent: ticket.record)
+
+    receive_inbound_email_from_mail(from: @customer.email, to: "support@support.example.com",
+      subject: "Re: Broken", in_reply_to: "<#{ses_mid}>", body: "<p>thanks</p>")
+
+    assert ticket.record.reload.recordable.open?
+  end
+
   test "a message whose id already belongs to a reply is dropped (idempotent ingest)" do
     ticket = open_ticket
     # The mailbox stores mail.message_id, which the Mail gem returns WITHOUT

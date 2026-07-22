@@ -15,4 +15,23 @@
     margin-block-end: var(--u-pad);
     border-block-end: var(--border-size-1) solid var(--line);
   }
+
+  /* Reply thread: inbound/outbound messages read as distinct cards, so space
+     them apart instead of the flush, hairline-divided rows .list uses for
+     summaries (only ticket replies carry a direction modifier). */
+  .comment--inbound,
+  .comment--outbound {
+    border-block-start: none;
+    margin-block-start: var(--u-pad);
+  }
+
+  /* Quoted history from an inbound reply, folded into a native <details> — the
+     browser handles the toggle, this is only cosmetics on the summary. */
+  .comment__body details { margin-block-start: var(--u-pad); }
+  .comment__body summary {
+    cursor: pointer;
+    color: var(--ink-muted);
+    font-size: var(--font-size-0);
+    user-select: none;
+  }
 }

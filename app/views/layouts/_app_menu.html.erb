@@ -7,7 +7,7 @@
   <div class="app-menu__panel">
     <nav class="app-menu__grid" aria-label="Quick navigation">
       <% if Current.user&.domain_admin? %>
-        <%= app_menu_card "Tickets", tickets_path, "inbox" %>
+        <%= app_menu_card "Tickets", tickets_path(status: "open"), "inbox" %>
         <%= app_menu_card "Customers", customers_path, "users" %>
         <%= app_menu_card "Licenses", licenses_path, "key" %>
       <% end %>
@@ -24,7 +24,7 @@
         <section class="app-menu__group" data-app-menu-target="group">
           <h3 class="app-menu__header">Go to</h3>
           <%= app_menu_link "Dashboard", root_path %>
-          <%= app_menu_link "Tickets", tickets_path %>
+          <%= app_menu_link "Tickets", tickets_path(status: "open") %>
           <%= app_menu_link "Customers", customers_path %>
           <%= app_menu_link "Licenses", licenses_path %>
         </section>
