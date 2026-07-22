@@ -8,6 +8,14 @@
 # The customer's client echoes that id into In-Reply-To/References, and
 # TicketsMailbox matches it back to the reply to thread.
 class TicketMailer < ApplicationMailer
+  # An agent-opened ticket sent to the customer to start the conversation. Its
+  # SES-assigned Message-ID is captured and stored on the Ticket by the
+  # controller so the customer's reply threads back.
+  def new_ticket
+    @ticket = params[:ticket]
+    mail to: @ticket.customer.email, subject: @ticket.title
+  end
+
   # An agent's reply to the customer. Sets In-Reply-To/References to the last
   # inbound message so the customer's client keeps the visual thread.
   def reply

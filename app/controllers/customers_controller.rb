@@ -6,7 +6,13 @@ class CustomersController < ApplicationController
   before_action :set_customer, only: %i[show edit update destroy]
 
   def index
-    @customers = Customer.order(:name)
+    # Customers holding a current license are "priority" — flagged with a key
+    # and filterable via ?licensed.
+    @licensed_ids = License.current.distinct.pluck(:customer_id).to_set
+    @licensed = params[:licensed].present?
+    scope = Customer.order(:name)
+    scope = scope.where(id: @licensed_ids) if @licensed
+    @customers = scope
   end
 
   def show

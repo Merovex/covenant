@@ -13,6 +13,15 @@
   </div>
 </header>
 
+<nav class="u-cluster u-margin-block-end" aria-label="Filter">
+  <%= link_to "All", customers_path,
+        class: "button button--small #{@licensed ? "button--ghost" : "button--primary"}" %>
+  <%= link_to customers_path(licensed: 1),
+        class: "button button--small #{@licensed ? "button--primary" : "button--ghost"}" do %>
+    <%= inline_svg_tag "lucide/key.svg", class: "lucide", size: "14px" %> Licensed
+  <% end %>
+</nav>
+
 <% if @customers.any? %>
   <ul class="list">
     <% @customers.each do |customer| %>
@@ -20,6 +29,11 @@
         <%= link_to customer_path(customer), class: "list__body" do %>
           <span class="list__titlerow">
             <span class="list__title"><%= customer.name %></span>
+            <% if @licensed_ids.include?(customer.id) %>
+              <span class="status-pill" title="Licensed — priority" aria-label="Licensed customer">
+                <%= inline_svg_tag "lucide/key.svg", class: "lucide", size: "14px" %>
+              </span>
+            <% end %>
           </span>
           <span class="list__meta">
             <span class="list__byline"><%= customer.email %></span>

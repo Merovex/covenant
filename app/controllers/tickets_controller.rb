@@ -37,13 +37,19 @@ class TicketsController < ApplicationController
   end
 
   # An agent opening a ticket in-app: the first message is the opener, exactly
-  # like a customer's inbound email. No autoresponder — that's inbound only.
+  # like a customer's inbound email. Optionally email that opener to the customer
+  # (the "…& send to customer" button) to start the conversation.
   def create
     @ticket = Ticket.new(ticket_params.merge(event: :created))
 
     if @ticket.valid?
       Record.originate(@ticket)
-      redirect_to ticket_path(@ticket.record), notice: "Ticket opened."
+      if params[:send_to_customer].present?
+        send_opener(@ticket)
+        redirect_to ticket_path(@ticket.record), notice: "Ticket opened and sent to the customer."
+      else
+        redirect_to ticket_path(@ticket.record), notice: "Ticket opened."
+      end
     else
       render :new, status: :unprocessable_entity
     end
@@ -74,5 +80,18 @@ class TicketsController < ApplicationController
   private
     def ticket_params
       params.expect(ticket: [ :customer_id, :title, :status, :content ])
+    end
+
+    # Email the opener to the customer and store the SES-assigned Message-ID on
+    # the ticket so their reply threads back (mirrors the reply flow). Sets the
+    # ticket to pending — the ball is now in the customer's court. A send failure
+    # leaves the ticket open, not delivered; we don't 500 the agent.
+    def send_opener(ticket)
+      message = TicketMailer.with(ticket: ticket).new_ticket.deliver_now
+      ses_id = message["ses_message_id"]&.value
+      ticket.record.revise(event: :updated, status: :pending,
+        message_id: ses_id.present? ? "#{ses_id}@email.amazonses.com" : nil)
+    rescue => e
+      Rails.logger.error("[TicketMailer] opener send failed: #{e.class}: #{e.message}")
     end
 end

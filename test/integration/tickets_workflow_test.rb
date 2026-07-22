@@ -40,6 +40,26 @@ class TicketsWorkflowTest < ActionDispatch::IntegrationTest
     assert_select "button", text: "Hold"
   end
 
+  test "opening a ticket with 'send to customer' emails the opener and sets pending" do
+    assert_emails 1 do
+      post tickets_path, params: {
+        ticket: { customer_id: customers(:ada).id, title: "Heads up", content: "<p>Please update</p>" },
+        send_to_customer: "Open & send to customer"
+      }
+    end
+
+    ticket = Ticket.current.find_by(title: "Heads up")
+    assert ticket.pending?, "sending the opener should hand the ball to the customer (pending)"
+  end
+
+  test "opening a ticket without sending does not email and stays open" do
+    assert_no_emails do
+      post tickets_path, params: { ticket: { customer_id: customers(:ada).id, title: "Internal note", content: "<p>fyi</p>" } }
+    end
+
+    assert Ticket.current.find_by(title: "Internal note").open?
+  end
+
   test "show lists the customer's other tickets in the context panel, excluding itself" do
     ticket = open_ticket # customers(:ada), title "Broken"
     other = Ticket.new(customer: customers(:ada), title: "Another issue", creator: users(:system))

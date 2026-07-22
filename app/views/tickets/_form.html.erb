@@ -28,7 +28,12 @@
   <% end %>
 
   <div class="u-cluster">
-    <%= f.submit ticket.record_id ? "Save changes" : "Open ticket", class: "button button--primary" %>
+    <% if ticket.record_id %>
+      <%= f.submit "Save changes", class: "button button--primary" %>
+    <% else %>
+      <%= f.submit "Open ticket", class: "button button--primary" %>
+      <%= f.submit "Open & send to customer", name: "send_to_customer", class: "button" %>
+    <% end %>
     <%= link_to "Never mind", (ticket.record_id ? ticket_path(ticket.record) : tickets_path), class: "button" %>
   </div>
 <% end %>
