@@ -121,16 +121,16 @@ class TicketsMailbox < ApplicationMailbox
     # Fold the quoted history a client appends on reply into a collapsed
     # <details> instead of deleting it — the thread already shows the history,
     # but keeping it (hidden) preserves context and any interleaved replying.
-    # Replies are top-posted, so the history trails: cut at the "On … wrote:"
-    # attribution, else the *last* top-level quote block, and move that node plus
-    # everything after it into the disclosure. A blockquote the customer wrote
-    # *above* the divider stays visible. <details> toggles natively — no JS.
+    # Replies are top-posted, so the history trails. Find the cut point wherever
+    # it's nested (clients wrap the whole body in a container): the "On … wrote:"
+    # attribution that isn't itself inside a quote, else the last quote block.
+    # Collapse that node plus its following siblings *within its own parent*, so
+    # the new reply above the divider stays visible. <details> toggles natively.
     def collapse_quoted_reply(doc)
-      body = doc.at_css("body") or return
-      children = body.element_children
-
-      cut = children.find { |el| el.text.to_s.match?(/\bwrote:\s*\z/i) }
-      cut ||= children.reverse.find { |el| el.matches?("blockquote, .gmail_quote") || el.at_css("blockquote, .gmail_quote") }
+      cut = doc.css("*").find do |el|
+        el.ancestors("blockquote").empty? && el.text.to_s.match?(/\bwrote:\s*\z/i)
+      end
+      cut ||= doc.css("blockquote, .gmail_quote").last
       return unless cut
 
       quoted = [ cut ]
@@ -139,8 +139,8 @@ class TicketsMailbox < ApplicationMailbox
       details = Nokogiri::XML::Node.new("details", doc)
       summary = Nokogiri::XML::Node.new("summary", doc)
       summary.content = "Quoted history"
+      cut.add_previous_sibling(details)
       details.add_child(summary)
       quoted.each { |node| details.add_child(node) }
-      body.add_child(details)
     end
 end

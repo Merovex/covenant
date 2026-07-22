@@ -20,7 +20,7 @@
   <% end %>
 <% end %>
 
-<%= render "shared/canvas_head", crumbs: [["Tickets", tickets_path], [@ticket.title, nil]], lead: ticket_actions do %>
+<%= render "shared/canvas_head", crumbs: [["Tickets", tickets_index_path], [@ticket.title, nil]], lead: ticket_actions do %>
   <%= button_to "Move to trash", ticket_path(@record), method: :delete, class: "menu__item", role: "menuitem",
         form: { data: { turbo_confirm: "Move this ticket to trash?" } } %>
 <% end %>

@@ -9,6 +9,9 @@ class TicketsController < ApplicationController
 
   def index
     @status = params[:status] if params[:status].in?(Ticket.statuses.keys)
+    # Remember the filter so a ticket's "Tickets" breadcrumb returns to it
+    # ("all" when unfiltered). Defaults to open on a first visit (see helper).
+    session[:tickets_filter] = @status || "all"
     @status_counts = Ticket.current.group(:status).count
 
     scope = Ticket.current.includes(:record, :customer, :rich_text_content)

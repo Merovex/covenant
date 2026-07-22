@@ -91,6 +91,26 @@ class TicketsMailboxTest < ActionMailbox::TestCase
     assert_not_includes details.text, "My fresh answer."      # the new reply stays visible
   end
 
+  test "a wrapped body collapses only the quote, not the whole email" do
+    # HEY wraps the whole message in container divs; the collapse must reach in
+    # and fold only the trailing quote, never the entire reply.
+    html = "<html><body><div class='message-content'><div class='trix-content'>" \
+           "<div>My actual reply</div>" \
+           "<div>On July 22, 2026, Verkilo Support wrote:</div>" \
+           "<blockquote><p>old stuff</p></blockquote>" \
+           "</div></div></body></html>"
+
+    receive_inbound_email_from_mail(from: "ada@example.com", to: "support@support.example.com",
+      subject: "Re: Broken", content_type: "text/html", body: html)
+
+    ticket = Ticket.current.last
+    details = Nokogiri::HTML(ticket.content.body.to_html).at_css("details")
+    assert details, "expected the quote folded into a <details>"
+    assert_includes details.text, "old stuff"
+    assert_not_includes details.text, "My actual reply"
+    assert_includes ticket.content.to_plain_text, "My actual reply"
+  end
+
   test "a blockquote the customer wrote above the divider stays visible" do
     html = "<html><body>" \
            "<blockquote><p>my intentional quote</p></blockquote>" \

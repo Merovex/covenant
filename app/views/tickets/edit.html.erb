@@ -1,6 +1,6 @@
 <% content_for :title, "Edit #{@ticket.title} — Covenant" %>
 
-<%= render "shared/canvas_head", crumbs: [["Tickets", tickets_path], [@ticket.title, ticket_path(@record)], ["Edit", nil]] %>
+<%= render "shared/canvas_head", crumbs: [["Tickets", tickets_index_path], [@ticket.title, ticket_path(@record)], ["Edit", nil]] %>
 
 <header class="perma-header">
   <h1 class="perma-header__title">Edit ticket</h1>
