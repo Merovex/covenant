@@ -23,9 +23,11 @@ Rails.application.configure do
 
   # Inbound: SES receipt rule → S3 → SNS → the :ses ingress. Activated by the
   # support SNS topic ARN. Routes to TicketsMailbox (see ADR 0010).
+  # NOTE: aws-actionmailbox-ses uses the SINGULAR `subscribed_topic` (one ARN
+  # string), not the plural array the old aws-sdk-rails :amazon ingress used.
   if (topic = Rails.application.credentials.dig(:support, :sns_topic_arn)).present?
     config.action_mailbox.ingress = :ses
-    config.action_mailbox.ses.subscribed_topics = [ topic ]
+    config.action_mailbox.ses.subscribed_topic = topic
   end
 
   # Settings specified here will take precedence over those in config/application.rb.
