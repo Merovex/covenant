@@ -62,3 +62,41 @@
     <p class="empty__text">Counts appear here once people start downloading, and after the next sync.</p>
   </div>
 <% end %>
+
+<h2 class="dashboard__section-title">Downloads by country</h2>
+<p class="u-text-muted">Last 90 days, resolved by Cloudflare from the download's IP — no addresses are stored.</p>
+<% if @downloads_by_country.any? %>
+  <div class="card">
+    <div class="card__body">
+      <div id="downloads-geo-map" class="downloads-geo__map"
+           data-controller="geo-map"
+           data-geo-map-data-value="<%= @downloads_by_country.to_json %>"></div>
+    </div>
+  </div>
+<% else %>
+  <p class="u-text-muted">No location data yet.</p>
+<% end %>
+
+<h2 class="dashboard__section-title">Top locations</h2>
+<% if @top_regions.any? %>
+  <div class="table-scroll">
+    <table class="table table--zebra">
+      <thead>
+        <tr>
+          <th scope="col">Location</th>
+          <th scope="col" data-align="end">Downloads</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @top_regions.each do |geo| %>
+          <tr>
+            <th scope="row"><%= download_location(geo) %></th>
+            <td data-align="end"><%= geo.count %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p class="u-text-muted">No location data yet.</p>
+<% end %>

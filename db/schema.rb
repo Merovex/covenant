@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_23_200000) do
+ActiveRecord::Schema[8.2].define(version: 2026_07_23_210000) do
   create_table "action_mailbox_inbound_emails", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -109,6 +109,15 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_23_200000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_customers_on_email", unique: true
+  end
+
+  create_table "download_geo_stats", force: :cascade do |t|
+    t.string "country", null: false
+    t.string "region", default: "", null: false
+    t.integer "count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["country", "region"], name: "index_download_geo_stats_on_country_and_region", unique: true
   end
 
   create_table "download_stats", force: :cascade do |t|

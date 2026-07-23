@@ -26,6 +26,8 @@ class DownloadsController < ApplicationController
     recent.pluck(:period, :platform, :count).each { |day, platform, count| @daily[day][platform] += count }
     @daily = @daily.sort.reverse.to_h
 
+    @top_regions = DownloadGeoStat.busiest.limit(25)
+    @downloads_by_country = DownloadGeoStat.group(:country).sum(:count) # { "US" => 12, … }
     @last_synced = DownloadStat.maximum(:updated_at)
   end
 

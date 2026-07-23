@@ -1,0 +1,13 @@
+@layer components {
+  /* The downloads-by-country choropleth. The --geo-* tokens are read by
+     geo_map_controller.js (via getComputedStyle) to build the color ramp. */
+  .downloads-geo__map {
+    --geo-nodata: color-mix(in oklab, var(--canvas), var(--ink) 10%);
+    --geo-low:    var(--accent-soft);
+    --geo-high:   var(--accent);
+    --geo-stroke: var(--line);
+
+    height: clamp(300px, 42vh, 460px);
+    min-width: 0;
+  }
+}

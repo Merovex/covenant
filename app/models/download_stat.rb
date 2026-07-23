@@ -20,21 +20,43 @@ class DownloadStat < ApplicationRecord
       where(period: range).sum(:count)
     end
 
-    # Pull the Worker's daily series and upsert it. Idempotent — re-running
-    # overwrites each (period, platform) with the latest count. Returns the
-    # number of rows written.
+    # Pull the Worker's stats once and mirror both the daily platform series and
+    # the geo snapshot. Idempotent. Returns counts of rows written.
     def sync!(now: Time.current)
-      series = Worker.fetch.fetch("series", [])
-      rows = series.filter_map do |row|
-        period, platform = row["period"], row["platform"]
-        next if period.blank? || platform.blank?
-        { period:, platform:, count: row["downloads"].to_i, created_at: now, updated_at: now }
-      end
-      return 0 if rows.empty?
-
-      upsert_all(rows, unique_by: %i[period platform])
-      rows.size
+      payload = Worker.fetch
+      { series: sync_series(payload["series"], now), regions: sync_geo(payload["regions"], now) }
     end
+
+    private
+      # Daily per-platform counts — upserted, so history accumulates past the
+      # Worker's 90-day window.
+      def sync_series(series, now)
+        rows = Array(series).filter_map do |row|
+          period, platform = row["period"], row["platform"]
+          next if period.blank? || platform.blank?
+          { period:, platform:, count: row["downloads"].to_i, created_at: now, updated_at: now }
+        end
+        return 0 if rows.empty?
+
+        upsert_all(rows, unique_by: %i[period platform])
+        rows.size
+      end
+
+      # Country/region totals — a window snapshot (not additive), so replace it
+      # wholesale each sync.
+      def sync_geo(regions, now)
+        rows = Array(regions).filter_map do |row|
+          country = row["country"].presence
+          next unless country
+          { country:, region: row["region"].to_s, count: row["downloads"].to_i,
+            created_at: now, updated_at: now }
+        end
+        DownloadGeoStat.transaction do
+          DownloadGeoStat.delete_all
+          DownloadGeoStat.insert_all(rows) if rows.any?
+        end
+        rows.size
+      end
   end
 
   # Thin HTTP client for the downloads Worker's /stats.json endpoint.
