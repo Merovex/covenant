@@ -10,6 +10,7 @@
         <%= app_menu_card "Tickets", tickets_path(status: "open"), "inbox" %>
         <%= app_menu_card "Customers", customers_path, "users" %>
         <%= app_menu_card "Licenses", licenses_path, "key" %>
+        <%= app_menu_card "Downloads", downloads_path, "monitor" %>
       <% end %>
     </nav>
 
@@ -27,6 +28,7 @@
           <%= app_menu_link "Tickets", tickets_path(status: "open") %>
           <%= app_menu_link "Customers", customers_path %>
           <%= app_menu_link "Licenses", licenses_path %>
+          <%= app_menu_link "Downloads", downloads_path %>
         </section>
       <% end %>
 

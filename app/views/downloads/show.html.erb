@@ -1,0 +1,64 @@
+<% content_for :title, "Downloads — Covenant" %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Downloads</h1>
+  <p class="perma-header__content u-text-muted">
+    Desktop app downloads, mirrored from downloads.verkilo.com.
+    <% if @last_synced %>Last synced <%= time_ago_in_words(@last_synced) %> ago.<% end %>
+  </p>
+</header>
+
+<div class="dashboard__tickets-head">
+  <h2 class="dashboard__section-title">Totals</h2>
+  <%= button_to "Refresh", refresh_downloads_path, class: "button button--small button--ghost" %>
+</div>
+
+<div class="dashboard__stats">
+  <% @totals.each do |label, count| %>
+    <%= render "dashboard/stat", label: label, count: count %>
+  <% end %>
+</div>
+
+<h2 class="dashboard__section-title">By platform (this month)</h2>
+<% if @month_by_platform.any? { |_, count| count.positive? } %>
+  <div class="dashboard__stats">
+    <% @month_by_platform.sort.each do |platform, count| %>
+      <%= render "dashboard/stat", label: platform.titleize, count: count %>
+    <% end %>
+  </div>
+<% else %>
+  <p class="u-text-muted">No downloads recorded this month yet.</p>
+<% end %>
+
+<h2 class="dashboard__section-title">Last <%= DownloadsController::DAILY_WINDOW %> days</h2>
+<% if @daily.any? %>
+  <div class="table-scroll">
+    <table class="table table--zebra">
+      <thead>
+        <tr>
+          <th scope="col">Day</th>
+          <% @platforms.each do |platform| %>
+            <th scope="col" data-align="end"><%= platform.titleize %></th>
+          <% end %>
+          <th scope="col" data-align="end">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @daily.each do |day, counts| %>
+          <tr>
+            <th scope="row"><%= day.strftime("%a %b %-d") %></th>
+            <% @platforms.each do |platform| %>
+              <td data-align="end"><%= counts[platform] %></td>
+            <% end %>
+            <td data-align="end"><strong><%= counts.values.sum %></strong></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="empty">
+    <p class="empty__title">No downloads yet</p>
+    <p class="empty__text">Counts appear here once people start downloading, and after the next sync.</p>
+  </div>
+<% end %>

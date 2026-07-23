@@ -24,3 +24,8 @@ production:
   close_resolved_tickets:
     class: Ticket::CloseResolvedJob
     schedule: at 3am every day
+
+  # Mirror desktop-app download counts from the Cloudflare downloads Worker.
+  sync_download_stats:
+    class: SyncDownloadStatsJob
+    schedule: every hour at minute 20

@@ -83,6 +83,12 @@ Rails.application.routes.draw do
     end
   end
 
+  # Desktop-app download analytics (admin only). Read from the local tally that
+  # SyncDownloadStatsJob mirrors from the Cloudflare downloads Worker; "refresh"
+  # pulls on demand.
+  get "downloads" => "downloads#show", as: :downloads
+  post "downloads/refresh" => "downloads#refresh", as: :refresh_downloads
+
   # Staff-only note on any notable (Ticket/License Record or Customer). The
   # target rides in the form as a signed GlobalID, so one route serves all.
   patch "note", to: "notes#update", as: :note
