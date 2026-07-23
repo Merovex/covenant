@@ -78,3 +78,5 @@ gem "diff-lcs", "~> 2.0"
 # Inbound support mail (Action Mailbox :ses ingress) and outbound send (:ses_v2).
 gem "aws-actionmailbox-ses", "~> 0.2.0"
 gem "aws-actionmailer-ses", "~> 1.2"
+
+gem "honeybadger", "~> 6.9"
