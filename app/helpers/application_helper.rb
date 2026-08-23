@@ -26,6 +26,12 @@ module ApplicationHelper
     filter == "all" ? tickets_path : tickets_path(status: filter)
   end
 
+  # Cents + ISO currency → "$28.00" (USD) or "28.00 EUR"; what orders store.
+  def money(cents, currency = "USD")
+    amount = number_with_precision(cents.to_i / 100.0, precision: 2, delimiter: ",")
+    currency.to_s.upcase == "USD" ? "$#{amount}" : "#{amount} #{currency.to_s.upcase}"
+  end
+
   # A timestamp that reads "3 days ago" within the past week and the plain date
   # beyond it, always with the exact date/time on hover. Returns a <time>.
   def relative_time(time)

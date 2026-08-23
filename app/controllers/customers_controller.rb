@@ -18,6 +18,7 @@ class CustomersController < ApplicationController
   def show
     @licenses = @customer.licenses.merge(License.current).includes(:record)
     @tickets = @customer.tickets.merge(Ticket.current).includes(:record)
+    @orders = @customer.orders.newest_first
   end
 
   def new

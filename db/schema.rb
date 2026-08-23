@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_23_120000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_23_130000) do
   create_table "action_mailbox_inbound_emails", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -172,6 +172,32 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_23_120000) do
     t.index ["status", "published_at"], name: "index_messages_on_status_and_published_at"
   end
 
+  create_table "orders", force: :cascade do |t|
+    t.string "external_id", null: false
+    t.integer "customer_id", null: false
+    t.integer "order_number"
+    t.string "identifier"
+    t.string "status", default: "paid", null: false
+    t.boolean "refunded", default: false, null: false
+    t.datetime "refunded_at"
+    t.string "currency", default: "USD", null: false
+    t.integer "subtotal", default: 0, null: false
+    t.integer "discount_total", default: 0, null: false
+    t.integer "tax", default: 0, null: false
+    t.integer "total", default: 0, null: false
+    t.integer "refunded_amount", default: 0, null: false
+    t.string "total_formatted"
+    t.string "product_name"
+    t.string "variant_name"
+    t.boolean "test_mode", default: false, null: false
+    t.datetime "ordered_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["customer_id"], name: "index_orders_on_customer_id"
+    t.index ["external_id"], name: "index_orders_on_external_id", unique: true
+    t.index ["ordered_at"], name: "index_orders_on_ordered_at"
+  end
+
   create_table "posts", force: :cascade do |t|
     t.string "title", null: false
     t.string "status", default: "drafted", null: false
@@ -282,6 +308,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_23_120000) do
   add_foreign_key "messages", "categories"
   add_foreign_key "messages", "records"
   add_foreign_key "messages", "users", column: "creator_id"
+  add_foreign_key "orders", "customers"
   add_foreign_key "posts", "bodies"
   add_foreign_key "posts", "records"
   add_foreign_key "posts", "users", column: "creator_id"

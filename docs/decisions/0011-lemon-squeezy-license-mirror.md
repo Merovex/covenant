@@ -1,6 +1,6 @@
 ---
 type: decision
-title: Lemon Squeezy license mirror — poll + webhook into License
+title: Lemon Squeezy mirror — licenses and orders, poll + webhook
 status: accepted
 tags: [rails, licenses, lemon-squeezy, integration, support, record-recordable]
 created: 2026-08-23
@@ -8,7 +8,7 @@ updated: 2026-08-23
 sources: [0009-support-desk-customers-licenses-tickets.md, 0007-versioned-recordables.md]
 ---
 
-# 0011. Lemon Squeezy license mirror — poll + webhook into License
+# 0011. Lemon Squeezy mirror — licenses and orders, poll + webhook
 
 ## Context
 Verkilo sells through Lemon Squeezy (store 277638), which mints the license
@@ -35,7 +35,7 @@ from `GET /v1/products`.
   mirror staff have **trashed** is skipped, never re-originated. The buyer is
   matched to a `Customer` by normalised email (`find_or_create_by!`; an
   existing customer keeps their name).
-- **Pull:** `SyncLemonSqueezyLicensesJob`, hourly in `config/recurring.yml`
+- **Pull:** `SyncLemonSqueezyLicensesJob`, daily (5am) in `config/recurring.yml`
   (+ a "Sync from Lemon Squeezy" button on `/licenses`, `POST /licenses/sync`).
   The backstop that catches anything the webhook missed and the one-shot
   backfill.
@@ -63,6 +63,38 @@ from `GET /v1/products`.
   (`LEMON_SQUEEZY_*`) overrides. No new Kamal secret — `RAILS_MASTER_KEY`
   already ships.
 
+### Addendum (2026-08-23, same day) — orders
+The key carries only an `order_id`; support also needs *what was paid, was it
+refunded, where's the receipt*. So the same mirror now covers orders:
+
+- **`Order`** — a **plain** table (not a recordable): LS owns the order and its
+  one status flip (paid → refunded) is carried by `refunded`/`refunded_at`, so
+  no version history is warranted. `external_id` has a real unique index (no
+  versions to repeat it). Columns: `order_number`, `identifier`, `status`
+  (pending/failed/paid/refunded), `refunded`, `refunded_at`, money as integer
+  cents in `currency` (`subtotal`, `discount_total`, `tax`, `total`,
+  `refunded_amount`) + `total_formatted`, `product_name`/`variant_name` (from
+  `first_order_item`), `test_mode`, `ordered_at`. `belongs_to :customer`
+  (matched by email like licenses); `Customer has_many :orders`
+  (`restrict_with_error`).
+- **Not stored: the receipt URL.** LS signs it with a short expiry (and re-signs
+  on every fetch, which made the sync non-idempotent). `GET /orders/:id/receipt`
+  asks LS for a fresh one and redirects.
+- **Feeds:** `sync!` now walks `GET /v1/orders` before keys (tally becomes
+  `{ orders: {…}, licenses: {…} }`); the webhook handles `order_created` and
+  `order_refunded` through `upsert_order`. Register those two events in LS.
+- **Links:** `License#order` / `Order#licenses` join on the LS order id both
+  sides carry — no FK between them (a key can arrive before its order).
+- **UI:** `/orders` (newest first, refunded filter) and `/orders/:id` (money
+  breakdown, refund, LS ids, licenses from the order, receipt link); the
+  license page's "Order" row; an "Orders" section on the customer page; a
+  **Revenue** row on the dashboard (`Order.revenue(range)` — paid orders,
+  refunds netted, test mode excluded, grouped by currency). App menu gains
+  "Orders" (new `lucide/receipt.svg`). Status pills: paid → success,
+  refunded/failed → danger, plus a neutral "Test" pill.
+- `ApplicationHelper#money(cents, currency)` — "$28.00" for USD, "28.00 EUR"
+  otherwise.
+
 ## Consequences
 - Every LS change is a version on the spine — renewals, disables, new
   activations — so the license page's history is the audit trail, free.
@@ -70,6 +102,8 @@ from `GET /v1/products`.
   versions; accepted (that *is* support-relevant history).
 - The LS API key is full-scope (LS has no read-only keys): treat it like the
   master key. It only lives in credentials.
+- Orders are read-only in the desk — no form, no edit; refunds happen in LS
+  and arrive by webhook/sync.
 - Trashing a mirrored license in the desk is a deliberate opt-out of syncing
   that key; restoring it resumes.
 - Minitest 6 dropped `minitest/mock`; `test_helper.rb` gained a small
@@ -79,7 +113,7 @@ from `GET /v1/products`.
 - **Webhook only** — real-time but no backfill of the already-issued key and
   no recovery from a missed delivery; kept as the fast path, not the source of
   truth.
-- **Poll only** — simplest, but up to an hour stale when a customer writes in
+- **Poll only** — simplest, but up to a day stale when a customer writes in
   minutes after buying; kept as the backstop.
 - **Query LS live on every page** — no local rows, no history, and the desk's
   customer/ticket joins would have nothing to hang on. The activations panel

@@ -2,6 +2,20 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-23] build | Lemon Squeezy orders — mirrored Order model, /orders, revenue, receipts
+- **Why**: the key only carried an `order_id`; support needs amount paid, refund state, variant, and the receipt. Addendum on [[0011-lemon-squeezy-license-mirror]].
+- **`Order`** (plain table, `db/migrate/20260823130000_create_orders.rb`): LS id unique-indexed, `customer_id` FK, order number/identifier, status enum (pending/failed/paid/refunded), `refunded`/`refunded_at`, cents money (`subtotal`, `discount_total`, `tax`, `total`, `refunded_amount`) + `currency` + `total_formatted`, product/variant name, `test_mode`, `ordered_at`. **No receipt URL stored** — LS re-signs it per fetch (broke idempotency); `GET /orders/:id/receipt` fetches a fresh one and redirects.
+- **Sync**: `License::LemonSqueezy.sync!` walks orders then keys → `{ orders: {…}, licenses: {…} }` (`describe` for the flash); `upsert_order` find-or-init by LS id, save only on change. Webhook handles `order_created` + `order_refunded`. `License#order` / `Order#licenses` join on the LS order id. `Order.revenue(range)` = paid orders, refunds netted, test mode excluded, grouped by currency.
+- **UI**: `/orders` (newest first, Refunded filter) + `/orders/:id` (money breakdown, refund, LS ids, licenses from the order, receipt in the ⋯ menu); license page "Order" row (number · item · total · pill · Receipt, or "not mirrored yet"); customer page "Orders" section; dashboard **Revenue** stat row (Today/week/month/year) with "All orders" link; app menu "Orders" card (+ `lucide/receipt.svg`). `ApplicationHelper#money`. Status pills: paid/refunded/failed + neutral Test.
+- **Tests**: +13 (module orders/revenue, webhook order events, `OrdersControllerTest` incl. receipt redirect/failure, customer + dashboard integration); dashboard stat count expectation 4 → 8. Suite 258 green. Dev run against the real store: `{orders: {created: 1}, licenses: {unchanged: 1}}` then all unchanged.
+- **Still to do by hand**: deploy; in LS add the `order_created` + `order_refunded` events to the existing webhook; one sync to backfill the order.
+- pages touched: [[0011-lemon-squeezy-license-mirror]], [[index]], [[overview]], [[log]]
+- refs: `app/models/order.rb`, `app/models/license/lemon_squeezy.rb`, `app/controllers/orders_controller.rb`, `app/controllers/webhooks/lemon_squeezy_controller.rb`, `app/controllers/dashboard_controller.rb`
+
+## [2026-08-23] tweak | Lemon Squeezy sync cadence → daily
+- `sync_lemon_squeezy_licenses` moved from hourly (:35) to **5am daily** in `config/recurring.yml` — the webhook is the fast path, the poll is a backstop; once a day is plenty. Comments/ADR/overview updated to match.
+- pages touched: [[0011-lemon-squeezy-license-mirror]], [[overview]], [[log]]
+
 ## [2026-08-23] build | Lemon Squeezy license mirror — sync job, webhook, live activations panel
 - **Why**: first real license issued in Lemon Squeezy (store 277638, product "Verkilo"); support needs sold keys in the desk without retyping. Filed [[0011-lemon-squeezy-license-mirror]] (accepted).
 - **`License::LemonSqueezy`** (`app/models/license/lemon_squeezy.rb`): `Net::HTTP` client (`DownloadStat::Worker` pattern) + `upsert(resource)` → originate a `License` (creator `User.system`) / revise with a new **`synced`** event (added to `Recordable::EVENTS`, narrated in `PublishableHelper`) / no-op / skip when the mirror is trashed. Customer matched by normalised email. Status map: inactive+active→active, expired→expired, disabled→revoked.

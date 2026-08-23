@@ -26,6 +26,11 @@ class License < ApplicationRecord
   # Mirrored from Lemon Squeezy (vs. typed in by staff).
   def external? = external_id.present?
 
+  # The mirrored LS order that minted this key, when we have it.
+  def order
+    Order.find_by(external_id: external_order_id) if external_order_id.present?
+  end
+
   # "XXXX-" + the last 12 characters — how Lemon Squeezy shows a key in its
   # dashboard and receipts, so staff and customers can match it by eye.
   def key_short

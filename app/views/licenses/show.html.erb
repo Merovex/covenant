@@ -22,7 +22,18 @@
   <div><dt class="u-text-strong">License key</dt><dd><code><%= @license.license_key %></code><% if @license.external? %> <span class="u-text-muted">(<%= @license.key_short %>)</span><% end %></dd></div>
   <% if @license.external? %>
     <div><dt class="u-text-strong">Activations</dt><dd><%= @license.activations %> <span class="u-text-muted">as of last sync</span></dd></div>
-    <div><dt class="u-text-strong">Lemon Squeezy</dt><dd>license key #<%= @license.external_id %><% if @license.external_order_id %> · order #<%= @license.external_order_id %><% end %></dd></div>
+    <div><dt class="u-text-strong">Order</dt><dd>
+      <% if (order = @license.order) %>
+        <%= link_to order.display_number, order_path(order) %> · <%= order.item_name %> · <%= money(order.total, order.currency) %>
+        <span class="status-pill status-pill--<%= order.refunded? ? "refunded" : order.status %>"><%= order.refunded? ? "Refunded" : order.status %></span>
+        · <%= link_to "Receipt", receipt_order_path(order), target: "_blank", rel: "noopener" %>
+      <% elsif @license.external_order_id %>
+        LS order #<%= @license.external_order_id %> <span class="u-text-muted">(not mirrored yet — run a sync)</span>
+      <% else %>
+        —
+      <% end %>
+    </dd></div>
+    <div><dt class="u-text-strong">Lemon Squeezy</dt><dd>license key #<%= @license.external_id %></dd></div>
   <% else %>
     <div><dt class="u-text-strong">Seats</dt><dd><%= @license.seats %></dd></div>
   <% end %>

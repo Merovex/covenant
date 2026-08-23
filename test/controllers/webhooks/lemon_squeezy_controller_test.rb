@@ -55,6 +55,33 @@ class Webhooks::LemonSqueezyControllerTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
   end
 
+  def order_payload(event, **attributes)
+    {
+      meta: { event_name: event },
+      data: { type: "orders", id: "555", attributes: {
+        store_id: 1, customer_id: 1, identifier: "abc", order_number: 42, user_name: "Grace Hopper", user_email: "grace@example.com",
+        currency: "USD", status: "paid", refunded: false, refunded_at: nil, subtotal: 2800, discount_total: 0, tax: 0, total: 2800,
+        refunded_amount: 0, total_formatted: "$28.00", first_order_item: { product_name: "Verkilo", variant_name: "Default" },
+        urls: { receipt: "https://example.com/r" }, created_at: "2026-08-23T05:03:51.000000Z", test_mode: false
+      }.merge(attributes) }
+    }.to_json
+  end
+
+  test "order_created mirrors the order and order_refunded updates it" do
+    assert_difference "Order.count", 1 do
+      post_webhook order_payload("order_created")
+    end
+    assert_response :ok
+    order = Order.find_by!(external_id: "555")
+    assert_equal customers(:grace), order.customer
+    assert order.paid?
+
+    post_webhook order_payload("order_refunded", status: "refunded", refunded: true, refunded_amount: 2800, refunded_at: "2026-08-24T00:00:00.000000Z")
+    assert_response :ok
+    assert order.reload.refunded?
+    assert_equal 2800, order.refunded_amount
+  end
+
   test "other events are acknowledged and ignored" do
     assert_no_difference "Record.licenses.count" do
       post_webhook payload("order_created")

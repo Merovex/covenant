@@ -41,6 +41,19 @@
 </section>
 
 <section class="u-stack u-margin-block-start">
+  <h2 class="u-text-strong">Orders</h2>
+  <% if @orders.any? %>
+    <ul class="list">
+      <% @orders.each do |order| %>
+        <%= render "orders/row", order: order, show_customer: false %>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="u-text-muted">No orders from Lemon Squeezy.</p>
+  <% end %>
+</section>
+
+<section class="u-stack u-margin-block-start">
   <h2 class="u-text-strong">Tickets</h2>
   <% if @tickets.any? %>
     <ul class="list">

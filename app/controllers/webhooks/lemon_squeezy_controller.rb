@@ -1,10 +1,11 @@
 # Inbound Lemon Squeezy webhooks. No session, no CSRF: the request is
 # authenticated by its X-Signature (HMAC-SHA256 of the raw body with the
 # signing secret we entered when registering the webhook in LS). License-key
-# events go straight through the same upsert the hourly sync uses; everything
-# else is acknowledged and ignored, so LS doesn't retry it.
+# and order events go straight through the same upserts the daily sync uses;
+# everything else is acknowledged and ignored, so LS doesn't retry it.
 class Webhooks::LemonSqueezyController < ActionController::API
   LICENSE_EVENTS = %w[ license_key_created license_key_updated ].freeze
+  ORDER_EVENTS = %w[ order_created order_refunded ].freeze
 
   before_action :verify_signature
 
@@ -12,7 +13,10 @@ class Webhooks::LemonSqueezyController < ActionController::API
     payload = JSON.parse(request.raw_post)
     event = payload.dig("meta", "event_name")
 
-    License::LemonSqueezy.upsert(payload.fetch("data")) if LICENSE_EVENTS.include?(event)
+    case event
+    when *LICENSE_EVENTS then License::LemonSqueezy.upsert(payload.fetch("data"))
+    when *ORDER_EVENTS   then License::LemonSqueezy.upsert_order(payload.fetch("data"))
+    end
     head :ok
   rescue JSON::ParserError, KeyError
     head :bad_request

@@ -1,11 +1,13 @@
 require "net/http"
 
-# Mirrors Lemon Squeezy license keys into License (ADR 0011). Two entry points
-# feed one upsert: SyncLemonSqueezyLicensesJob pages through the store's keys
-# (hourly + the "Sync" button), and Webhooks::LemonSqueezyController hands in
-# the key from a license_key_created/updated event. Either way a new key
-# originates a License; a changed key revises it with a "synced" version, so
-# renewals, disables and new activations land in the spine's history.
+# Mirrors Lemon Squeezy into the desk (ADR 0011): license keys → License,
+# orders → Order. Two entry points feed the same upserts:
+# SyncLemonSqueezyLicensesJob pages through the store's orders and keys (daily
+# + the "Sync" button), and Webhooks::LemonSqueezyController hands in the
+# resource from an order_*/license_key_* event. A new key originates a License;
+# a changed key revises it with a "synced" version, so renewals, disables and
+# new activations land in the spine's history. Orders are a plain mirror
+# (upsert in place — LS owns them).
 #
 # Secrets: the API key (and optional store id / webhook signing secret) come
 # from ENV first, credentials second — the same ladder as DownloadStat::Worker.
@@ -40,14 +42,21 @@ module License::LemonSqueezy
     Rails.cache.read(LAST_SYNCED_KEY)
   end
 
-  # Pull every key from LS and mirror it. Idempotent. Returns a tally like
-  # { created: 1, updated: 0, unchanged: 4, skipped: 0 }.
+  # Pull every order and key from LS and mirror them — orders first, so a key's
+  # order is there when its license page asks. Idempotent. Returns a tally like
+  # { orders: { created: 1 }, licenses: { unchanged: 4 } }.
   def sync!(now: Time.current)
     products = product_names
-    tally = Hash.new(0)
-    each_license_key { |resource| tally[upsert(resource, products: products)] += 1 }
+    orders, licenses = Hash.new(0), Hash.new(0)
+    each_order { |resource| orders[upsert_order(resource)] += 1 }
+    each_license_key { |resource| licenses[upsert(resource, products: products)] += 1 }
     Rails.cache.write(LAST_SYNCED_KEY, now)
-    tally
+    { orders: orders, licenses: licenses }
+  end
+
+  # One line for a flash: "orders 1 created; licenses 2 unchanged".
+  def describe(tally)
+    tally.map { |kind, counts| "#{kind} #{counts.map { |k, v| "#{v} #{k}" }.join(", ")}" }.join("; ")
   end
 
   # Mirror one LS license-key resource ({ "id" => …, "attributes" => { … } },
@@ -70,6 +79,29 @@ module License::LemonSqueezy
     else
       :unchanged
     end
+  end
+
+  # Mirror one LS order resource. Orders are plain rows: find by the LS id,
+  # apply, save only if something moved. Returns :created / :updated /
+  # :unchanged.
+  def upsert_order(resource)
+    order = Order.find_or_initialize_by(external_id: resource.fetch("id").to_s)
+    order.assign_attributes(order_attributes_for(resource))
+    if order.new_record?
+      order.save!
+      :created
+    elsif order.changed?
+      order.save!
+      :updated
+    else
+      :unchanged
+    end
+  end
+
+  # A fresh signed receipt link for an order — LS signs them with a short
+  # expiry, so the stored one goes stale; ask again when someone clicks.
+  def receipt_url(external_id)
+    get("orders/#{external_id}").dig("data", "attributes", "urls", "receipt")
   end
 
   # Live activations of a key, straight from LS (for the license page's
@@ -106,10 +138,34 @@ module License::LemonSqueezy
     }
   end
 
+  def order_attributes_for(resource)
+    a = resource.fetch("attributes")
+    item = a["first_order_item"] || {}
+    {
+      customer_id: customer_for(a).id,
+      order_number: a["order_number"],
+      identifier: a["identifier"],
+      status: Order.statuses.key?(a["status"]) ? a["status"] : "paid",
+      refunded: a["refunded"] == true,
+      refunded_at: parse_time(a["refunded_at"]),
+      currency: a["currency"].presence || "USD",
+      subtotal: a["subtotal"].to_i,
+      discount_total: a["discount_total"].to_i,
+      tax: a["tax"].to_i,
+      total: a["total"].to_i,
+      refunded_amount: a["refunded_amount"].to_i,
+      total_formatted: a["total_formatted"],
+      product_name: item["product_name"],
+      variant_name: item["variant_name"],
+      test_mode: a["test_mode"] == true,
+      ordered_at: parse_time(a["created_at"])
+    }
+  end
+
   # The LS buyer becomes (or already is) a Customer, matched on email.
   def customer_for(attributes)
     email = attributes["user_email"].to_s.strip.downcase
-    raise ArgumentError, "Lemon Squeezy license key #{attributes["key"]} has no user_email" if email.blank?
+    raise ArgumentError, "Lemon Squeezy #{attributes["key"] ? "license key #{attributes["key"]}" : "order #{attributes["order_number"]}"} has no user_email" if email.blank?
 
     Customer.find_or_create_by!(email: email) do |customer|
       customer.name = attributes["user_name"].presence || email
@@ -138,9 +194,15 @@ module License::LemonSqueezy
   # -- HTTP ----------------------------------------------------------------
 
   def each_license_key(&block)
-    params = {}
-    params["filter[store_id]"] = store_id if store_id.present?
-    each_page("license-keys", params, &block)
+    each_page("license-keys", store_filter, &block)
+  end
+
+  def each_order(&block)
+    each_page("orders", store_filter, &block)
+  end
+
+  def store_filter
+    store_id.present? ? { "filter[store_id]" => store_id } : {}
   end
 
   # Walk a paginated JSON:API collection, yielding each resource. Without a

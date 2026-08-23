@@ -80,6 +80,10 @@ Rails.application.routes.draw do
     # Pull every key from Lemon Squeezy now (the hourly job's manual twin).
     collection { post :sync }
   end
+  # Orders mirrored from Lemon Squeezy — read-only; receipt bounces to LS.
+  resources :orders, only: %i[index show] do
+    member { get :receipt }
+  end
   # Live "which machines is this key on" panel, lazy-loaded into the license
   # page so LS being slow never blocks the page itself (:id = Record id).
   get "licenses/:id/activations" => "licenses/activations#show", as: :license_activations

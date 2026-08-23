@@ -98,15 +98,17 @@ class License::LemonSqueezyTest < ActiveSupport::TestCase
     end
   end
 
-  test "sync! pages through the store's keys and stamps the sync time" do
+  test "sync! pages through the store's orders and keys and stamps the sync time" do
     pages = {
-      1 => { "data" => [ resource ], "meta" => { "page" => { "currentPage" => 1, "lastPage" => 2 } } },
-      2 => { "data" => [ resource(id: "2", key: "second-key", user_email: "grace@example.com") ], "meta" => { "page" => { "currentPage" => 2, "lastPage" => 2 } } }
+      "license-keys" => {
+        1 => { "data" => [ resource ], "meta" => { "page" => { "currentPage" => 1, "lastPage" => 2 } } },
+        2 => { "data" => [ resource(id: "2", key: "second-key", user_email: "grace@example.com") ], "meta" => { "page" => { "currentPage" => 2, "lastPage" => 2 } } }
+      },
+      "orders" => {
+        1 => { "data" => [ order_resource ], "meta" => { "page" => { "currentPage" => 1, "lastPage" => 1 } } }
+      }
     }
-    fake_get = ->(path, params = {}) do
-      assert_equal "license-keys", path
-      pages.fetch(params["page[number]"])
-    end
+    fake_get = ->(path, params = {}) { pages.fetch(path).fetch(params["page[number]"]) }
 
     tally = stubbing(License::LemonSqueezy, :product_names, PRODUCTS) do
       stubbing(License::LemonSqueezy, :get, fake_get) do
@@ -114,8 +116,74 @@ class License::LemonSqueezyTest < ActiveSupport::TestCase
       end
     end
 
-    assert_equal({ created: 2 }, tally)
+    assert_equal({ orders: { created: 1 }, licenses: { created: 2 } }, tally)
+    assert_equal "orders 1 created; licenses 2 created", License::LemonSqueezy.describe(tally)
     assert_equal 2, License.current.external.count
     assert_equal customers(:grace), License.current.find_by!(external_id: "2").customer
+    assert_equal Order.find_by!(external_id: "9284193"), License.current.find_by!(external_id: "1555330").order
+  end
+
+  # -- orders --------------------------------------------------------------
+
+  def order_resource(id: "9284193", **overrides)
+    attributes = {
+      "store_id" => 277638, "customer_id" => 9686817, "identifier" => "89fc455e-72df-4522-9713-113dcbe197ae",
+      "order_number" => 2776381, "user_name" => "Benjamin Wilson", "user_email" => "ben@example.com",
+      "currency" => "USD", "status" => "paid", "refunded" => false, "refunded_at" => nil,
+      "subtotal" => 12800, "discount_total" => 10000, "tax" => 189, "total" => 2800, "refunded_amount" => 0,
+      "total_formatted" => "$28.00",
+      "first_order_item" => { "product_id" => 1309550, "variant_id" => 1, "product_name" => "Verkilo", "variant_name" => "Default", "price" => 12800 },
+      "urls" => { "receipt" => "https://app.lemonsqueezy.com/my-orders/89fc455e?signature=abc" },
+      "created_at" => "2026-08-23T05:03:51.000000Z", "updated_at" => "2026-08-23T05:04:56.000000Z", "test_mode" => false
+    }.merge(overrides.transform_keys(&:to_s))
+    { "type" => "orders", "id" => id, "attributes" => attributes }
+  end
+
+  test "a new order is mirrored onto its customer" do
+    assert_difference [ "Order.count", "Customer.count" ], 1 do
+      assert_equal :created, License::LemonSqueezy.upsert_order(order_resource)
+    end
+
+    order = Order.find_by!(external_id: "9284193")
+    assert_equal 2776381, order.order_number
+    assert_equal "#2776381", order.display_number
+    assert_equal "Verkilo", order.item_name
+    assert_equal 2800, order.total
+    assert_equal 10000, order.discount_total
+    assert_equal "USD", order.currency
+    assert order.paid?
+    assert_not order.refunded?
+    assert_equal Time.utc(2026, 8, 23, 5, 3, 51), order.ordered_at
+    assert_equal "ben@example.com", order.customer.email
+  end
+
+  test "an unchanged order is a no-op and a refund updates it in place" do
+    License::LemonSqueezy.upsert_order(order_resource)
+    assert_equal :unchanged, License::LemonSqueezy.upsert_order(order_resource)
+
+    assert_no_difference "Order.count" do
+      assert_equal :updated, License::LemonSqueezy.upsert_order(order_resource(
+        status: "refunded", refunded: true, refunded_at: "2026-08-24T10:00:00.000000Z", refunded_amount: 2800))
+    end
+    order = Order.find_by!(external_id: "9284193")
+    assert order.refunded?
+    assert_equal 2800, order.refunded_amount
+    assert_equal 0, order.net_total
+  end
+
+  test "a variant other than Default shows in the item name" do
+    License::LemonSqueezy.upsert_order(order_resource(first_order_item: { "product_name" => "Verkilo", "variant_name" => "Pro" }))
+    assert_equal "Verkilo — Pro", Order.find_by!(external_id: "9284193").item_name
+  end
+
+  test "revenue nets refunds, skips test mode and unpaid orders, and groups by currency" do
+    License::LemonSqueezy.upsert_order(order_resource)
+    License::LemonSqueezy.upsert_order(order_resource(id: "2", order_number: 2, status: "refunded", refunded: true, refunded_amount: 1000, total: 1000))
+    License::LemonSqueezy.upsert_order(order_resource(id: "3", order_number: 3, test_mode: true, total: 99900))
+    License::LemonSqueezy.upsert_order(order_resource(id: "4", order_number: 4, status: "pending", total: 5000))
+    License::LemonSqueezy.upsert_order(order_resource(id: "5", order_number: 5, currency: "EUR", total: 1500))
+
+    assert_equal({ "USD" => 2800, "EUR" => 1500 }, Order.revenue(Time.utc(2026, 8, 1)..Time.utc(2026, 9, 1)))
+    assert_equal({}, Order.revenue(Time.utc(2025, 1, 1)..Time.utc(2025, 2, 1)))
   end
 end

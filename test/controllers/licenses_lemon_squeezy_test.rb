@@ -11,12 +11,12 @@ class LicensesLemonSqueezyTest < ActionDispatch::IntegrationTest
   end
 
   test "sync button pulls from Lemon Squeezy and reports the tally" do
-    stubbing(License::LemonSqueezy, :sync!, { created: 1, unchanged: 2 }) do
+    stubbing(License::LemonSqueezy, :sync!, { orders: { created: 1 }, licenses: { created: 1, unchanged: 2 } }) do
       post sync_licenses_path
     end
 
     assert_redirected_to licenses_path
-    assert_equal "Synced from Lemon Squeezy: 1 created, 2 unchanged.", flash[:notice]
+    assert_equal "Synced from Lemon Squeezy: orders 1 created; licenses 1 created, 2 unchanged.", flash[:notice]
   end
 
   test "a failed sync is reported, not raised" do
@@ -34,8 +34,21 @@ class LicensesLemonSqueezyTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert_select "p", /Mirrored from Lemon Squeezy/
     assert_select "dd", /2 \/ ∞/
+    assert_select "dd", /not mirrored yet/
     assert_select "turbo-frame[src=?]", license_activations_path(@license.record)
     assert_select "a", text: "Edit", count: 0
+  end
+
+  test "the license page links its mirrored order" do
+    order = Order.create!(external_id: "9", customer: customers(:ada), order_number: 77, status: "paid",
+      total: 2800, currency: "USD", product_name: "Verkilo", variant_name: "Default", ordered_at: Time.current)
+
+    get license_path(@license.record)
+
+    assert_response :ok
+    assert_select "a[href=?]", order_path(order), text: "#77"
+    assert_select "dd", /\$28\.00/
+    assert_select "a[href=?]", receipt_order_path(order)
   end
 
   test "the activations panel lists machines from Lemon Squeezy" do

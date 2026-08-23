@@ -9,6 +9,7 @@ class Customer < ApplicationRecord
   # delete with an error instead. Rename/merge, don't destroy.
   has_many :licenses, dependent: :restrict_with_error
   has_many :tickets, dependent: :restrict_with_error
+  has_many :orders, dependent: :restrict_with_error
 
   normalizes :email, with: ->(e) { e.strip.downcase }
 

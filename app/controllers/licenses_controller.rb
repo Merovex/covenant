@@ -16,11 +16,11 @@ class LicensesController < ApplicationController
   end
 
   # Manual "Sync" — mirror Lemon Squeezy right now (admin action, so blocking
-  # briefly is fine), then show the fresh list. The hourly job and the webhook
+  # briefly is fine), then show the fresh list. The daily job and the webhook
   # do the same without anyone asking.
   def sync
     tally = License::LemonSqueezy.sync!
-    redirect_to licenses_path, notice: "Synced from Lemon Squeezy: #{tally.map { |k, v| "#{v} #{k}" }.join(", ")}."
+    redirect_to licenses_path, notice: "Synced from Lemon Squeezy: #{License::LemonSqueezy.describe(tally)}."
   rescue => e
     redirect_to licenses_path, alert: "Couldn't sync from Lemon Squeezy: #{e.message}"
   end

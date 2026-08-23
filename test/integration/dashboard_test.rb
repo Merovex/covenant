@@ -18,7 +18,7 @@ class DashboardTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_select ".dashboard__stats .dashboard__stat", 4          # new-license counters
+    assert_select ".dashboard__stats .dashboard__stat", 8          # new-license + revenue counters
     assert_select ".list .list__title", text: "Login broken"      # the open one shows
     assert_select ".list .list__title", text: "Waiting on them", count: 0
     assert_select ".list .list__title", text: "Blocked upstream", count: 0

@@ -1,6 +1,6 @@
 require "net/http"
 
-# Mirrors Lemon Squeezy license keys into License. Scheduled hourly in
+# Mirrors Lemon Squeezy license keys into License. Scheduled daily in
 # config/recurring.yml and enqueued by the "Sync" button on the licenses index;
 # the webhook keeps things fresh in between, this is the backstop that catches
 # anything it missed.

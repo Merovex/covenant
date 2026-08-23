@@ -1,6 +1,7 @@
 /*
- * Status pill — a small, rounded state marker for tickets (open/pending/closed)
- * and licenses (active/suspended/expired/revoked). Reads the shared semantic
+ * Status pill — a small, rounded state marker for tickets (open/pending/closed),
+ * licenses (active/suspended/expired/revoked) and orders (paid/pending/failed/
+ * refunded/test). Reads the shared semantic
  * surface/ink token pairs (see 01-tokens.css), so it re-themes for free; the
  * modifier just picks which pair. Neutral states fall back to the subtle fill.
  *
@@ -29,9 +30,10 @@
     color: var(--ink-on-soft);
   }
 
-  /* Resolved / live (ticket resolved, license active) */
+  /* Resolved / live (ticket resolved, license active, order paid) */
   .status-pill--resolved,
-  .status-pill--active {
+  .status-pill--active,
+  .status-pill--paid {
     background: var(--success-surface);
     color: var(--success-ink);
   }
@@ -43,9 +45,11 @@
     color: var(--warning-ink);
   }
 
-  /* Blocked / terminated hard (on hold, license revoked) */
+  /* Blocked / terminated hard (on hold, license revoked, order refunded/failed) */
   .status-pill--on_hold,
-  .status-pill--revoked {
+  .status-pill--revoked,
+  .status-pill--refunded,
+  .status-pill--failed {
     background: var(--danger-surface);
     color: var(--danger-ink);
   }
