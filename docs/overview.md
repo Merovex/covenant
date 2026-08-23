@@ -42,6 +42,13 @@ design/reference docs and the work log; see [[CLAUDE]] for how it's maintained.
     "open & send to customer"; licensed-customer marker + filter; and a
     **staff-only rich-text `Notable` note** (un-versioned, on the Record for
     Ticket/License, on Customer directly — a dull-yellow sticky panel).
+  - **Licenses mirror Lemon Squeezy** ([0011](decisions/0011-lemon-squeezy-license-mirror.md)):
+    `License::LemonSqueezy` upserts LS license keys into `License` (new key →
+    originate, change → a `synced` version, buyer → `Customer` by email), fed
+    by an hourly `SyncLemonSqueezyLicensesJob` + "Sync" button **and** the
+    HMAC-signed `POST /webhooks/lemon_squeezy`. Mirrored licenses show
+    activations and a live "Activated machines" panel; they're edited in LS,
+    not here.
 - **Theme repointed to Pine** (Teal's lightness/hue, chroma dropped ~75%).
 - The generic template sections (Posts / Forum / Chatroom) are **hidden from
   nav** — their code remains, but Covenant presents purely as a support desk.

@@ -29,3 +29,9 @@ production:
   sync_download_stats:
     class: SyncDownloadStatsJob
     schedule: every hour at minute 20
+
+  # Mirror Lemon Squeezy license keys into the support desk (the webhook is the
+  # fast path; this catches anything it missed).
+  sync_lemon_squeezy_licenses:
+    class: SyncLemonSqueezyLicensesJob
+    schedule: every hour at minute 35

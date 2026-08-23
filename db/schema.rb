@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_07_23_210000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_23_120000) do
   create_table "action_mailbox_inbound_emails", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -142,8 +142,13 @@ ActiveRecord::Schema[8.2].define(version: 2026_07_23_210000) do
     t.string "status", default: "active", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "external_id"
+    t.string "external_order_id"
+    t.integer "activation_limit"
+    t.integer "instances_count", default: 0, null: false
     t.index ["creator_id"], name: "index_licenses_on_creator_id"
     t.index ["customer_id"], name: "index_licenses_on_customer_id"
+    t.index ["external_id"], name: "index_licenses_on_external_id"
     t.index ["record_id", "id"], name: "index_licenses_on_record_id_and_id"
   end
 

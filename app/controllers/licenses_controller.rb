@@ -3,11 +3,26 @@
 # (record.revise), a delete is a trash on the history. Admin only.
 class LicensesController < ApplicationController
   include LicenseScoped
-  skip_before_action :set_record, only: %i[index new create]
+  skip_before_action :set_record, only: %i[index new create sync]
   before_action -> { authorize! License, to: :manage }
+  # Mirrored licenses are edited in Lemon Squeezy; a local edit would just be
+  # overwritten by the next sync.
+  before_action :refuse_external_edit, only: %i[edit update]
 
   def index
     @licenses = License.current.includes(:record, :customer).order(:product, :license_key)
+    @lemon_squeezy = License::LemonSqueezy.configured?
+    @last_synced = License::LemonSqueezy.last_synced_at
+  end
+
+  # Manual "Sync" — mirror Lemon Squeezy right now (admin action, so blocking
+  # briefly is fine), then show the fresh list. The hourly job and the webhook
+  # do the same without anyone asking.
+  def sync
+    tally = License::LemonSqueezy.sync!
+    redirect_to licenses_path, notice: "Synced from Lemon Squeezy: #{tally.map { |k, v| "#{v} #{k}" }.join(", ")}."
+  rescue => e
+    redirect_to licenses_path, alert: "Couldn't sync from Lemon Squeezy: #{e.message}"
   end
 
   def show
@@ -49,6 +64,12 @@ class LicensesController < ApplicationController
   end
 
   private
+    def refuse_external_edit
+      return unless @license.external?
+
+      redirect_to license_path(@record), alert: "This license is mirrored from Lemon Squeezy — edit it there; changes sync back automatically."
+    end
+
     def license_params
       params.expect(license: [ :customer_id, :license_key, :product, :seats,
         :issued_at, :expires_at, :status ])

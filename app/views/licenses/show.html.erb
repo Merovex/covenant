@@ -1,7 +1,8 @@
 <% content_for :title, "#{@license.product} — Covenant" %>
 
+<%# Mirrored licenses are edited in Lemon Squeezy — the sync would overwrite a local edit. %>
 <%= render "shared/canvas_head", crumbs: [["Licenses", licenses_path], [@license.product, nil]],
-      edit_href: edit_license_path(@record) do %>
+      edit_href: (edit_license_path(@record) unless @license.external?) do %>
   <%= button_to "Move to trash", license_path(@record), method: :delete, class: "menu__item", role: "menuitem",
         form: { data: { turbo_confirm: "Move this license to trash?" } } %>
 <% end %>
@@ -11,14 +12,30 @@
   <p class="perma-header__content u-text-muted">
     <span class="status-pill status-pill--<%= @license.status %>"><%= @license.status %></span>
     · <%= link_to @license.customer.display_name, customer_path(@license.customer) %>
+    <% if @license.external? %> · Mirrored from Lemon Squeezy<% end %>
   </p>
 </header>
 
 <%= render "shared/note", notable: @record %>
 
 <dl class="u-stack">
-  <div><dt class="u-text-strong">License key</dt><dd><code><%= @license.license_key %></code></dd></div>
-  <div><dt class="u-text-strong">Seats</dt><dd><%= @license.seats %></dd></div>
+  <div><dt class="u-text-strong">License key</dt><dd><code><%= @license.license_key %></code><% if @license.external? %> <span class="u-text-muted">(<%= @license.key_short %>)</span><% end %></dd></div>
+  <% if @license.external? %>
+    <div><dt class="u-text-strong">Activations</dt><dd><%= @license.activations %> <span class="u-text-muted">as of last sync</span></dd></div>
+    <div><dt class="u-text-strong">Lemon Squeezy</dt><dd>license key #<%= @license.external_id %><% if @license.external_order_id %> · order #<%= @license.external_order_id %><% end %></dd></div>
+  <% else %>
+    <div><dt class="u-text-strong">Seats</dt><dd><%= @license.seats %></dd></div>
+  <% end %>
   <div><dt class="u-text-strong">Issued</dt><dd><%= @license.issued_at ? l(@license.issued_at, format: :long) : "—" %></dd></div>
-  <div><dt class="u-text-strong">Expires</dt><dd><%= @license.expires_at ? l(@license.expires_at, format: :long) : "—" %></dd></div>
+  <div><dt class="u-text-strong">Expires</dt><dd><%= @license.expires_at ? l(@license.expires_at, format: :long) : "Never" %></dd></div>
 </dl>
+
+<% if @license.external? %>
+  <section class="u-stack u-margin-block-start">
+    <h2 class="u-text-strong">Activated machines</h2>
+    <%# Lazy: asks Lemon Squeezy live, after the page is up. %>
+    <%= turbo_frame_tag dom_id(@record, :activations), src: license_activations_path(@record), loading: :lazy do %>
+      <p class="u-text-muted">Checking Lemon Squeezy…</p>
+    <% end %>
+  </section>
+<% end %>

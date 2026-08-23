@@ -30,7 +30,7 @@
               <span class="list__title"><%= license.product %></span>
               <span class="status-pill status-pill--<%= license.status %>"><%= license.status %></span>
             </span>
-            <span class="list__meta"><span class="list__byline"><%= license.license_key %></span> <%= pluralize(license.seats, "seat") %></span>
+            <span class="list__meta"><span class="list__byline"><%= license.license_key %></span> <%= license.external? ? "#{license.activations} activations" : pluralize(license.seats, "seat") %></span>
           <% end %>
         </li>
       <% end %>

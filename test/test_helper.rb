@@ -19,6 +19,21 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
+    # Run a block with `receiver.method` swapped for a stand-in (a value, or a
+    # callable invoked with the original arguments). Minitest 6 dropped
+    # minitest/mock; this is the slice of it we use — for keeping external
+    # services (Lemon Squeezy) out of tests.
+    def stubbing(receiver, method, stand_in)
+      original = receiver.method(method)
+      receiver.define_singleton_method(method) do |*args, **kwargs, &block|
+        stand_in.respond_to?(:call) ? stand_in.call(*args, **kwargs, &block) : stand_in
+      end
+      yield
+    ensure
+      receiver.singleton_class.remove_method(method)
+      receiver.define_singleton_method(method, original) if original.owner == receiver.singleton_class
+    end
+
     # Run a block with the magic-link registration policy temporarily overridden.
     def with_registration_policy(policy)
       config = Rails.configuration.x.authentication

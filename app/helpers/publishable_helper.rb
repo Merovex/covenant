@@ -23,6 +23,7 @@ module PublishableHelper
     when "unpinned"    then "unpinned this #{noun}"
     when "trashed"     then "moved this #{noun} to the trash"
     when "restored"    then "restored this #{noun} from the trash"
+    when "synced"      then "synced this #{noun} from Lemon Squeezy"
     else version.event
     end
   end

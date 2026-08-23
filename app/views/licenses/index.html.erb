@@ -9,7 +9,13 @@
       <%= link_to new_license_path, class: "button button--primary button--small" do %>
         <%= inline_svg_tag "lucide/plus.svg", class: "lucide", size: "16px" %> New license
       <% end %>
+      <% if @lemon_squeezy %>
+        <%= button_to "Sync from Lemon Squeezy", sync_licenses_path, class: "button button--ghost button--small" %>
+      <% end %>
     </nav>
+    <% if @last_synced %>
+      <span class="u-text-muted">Last synced from Lemon Squeezy <%= time_ago_in_words(@last_synced) %> ago.</span>
+    <% end %>
   </div>
 </header>
 
@@ -24,7 +30,7 @@
           </span>
           <span class="list__meta">
             <span class="list__byline"><%= license.license_key %></span>
-            <%= license.customer.display_name %> · <%= pluralize(license.seats, "seat") %>
+            <%= license.customer.display_name %> · <%= license.external? ? "#{license.activations} activations" : pluralize(license.seats, "seat") %>
           </span>
         <% end %>
       </li>

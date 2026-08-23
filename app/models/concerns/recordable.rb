@@ -6,7 +6,9 @@
 module Recordable
   extend ActiveSupport::Concern
 
-  EVENTS = %w[ created updated scheduled unscheduled published unpublished pinned unpinned trashed restored ]
+  # "synced" tags a version written by an external mirror (Lemon Squeezy), so
+  # the history reads "synced" rather than implying a person edited it.
+  EVENTS = %w[ created updated scheduled unscheduled published unpublished pinned unpinned trashed restored synced ]
 
   included do
     # Optional at the AR layer only so a first version can validate before its

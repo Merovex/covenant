@@ -36,6 +36,7 @@ for canonical naming.
 | [0008](decisions/0008-email-relay-amazon-ses.md) | Email relay — adopt Amazon SES/SNS | accepted | 2026-07-10 |
 | [0009](decisions/0009-support-desk-customers-licenses-tickets.md) | Support desk — Customers, Licenses, Tickets, Replies | accepted | 2026-07-22 |
 | [0010](decisions/0010-inbound-email-action-mailbox-ses.md) | Inbound support email — Action Mailbox (SES/SNS) + Message-ID token routing | accepted | 2026-07-22 |
+| [0011](decisions/0011-lemon-squeezy-license-mirror.md) | Lemon Squeezy license mirror — poll + webhook into License | accepted | 2026-08-23 |
 
 ## Concepts
 

@@ -1,0 +1,28 @@
+<%= turbo_frame_tag dom_id(@record, :activations) do %>
+  <% if @error %>
+    <p class="u-text-muted">Couldn't reach Lemon Squeezy: <%= @error %></p>
+  <% elsif @instances.empty? %>
+    <p class="u-text-muted">Not activated on any machine yet.</p>
+  <% else %>
+    <div class="table-scroll">
+      <table class="table table--zebra">
+        <thead>
+          <tr>
+            <th scope="col">Machine</th>
+            <th scope="col">Instance id</th>
+            <th scope="col">Activated</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @instances.each do |instance| %>
+            <tr>
+              <td><%= instance["name"] %></td>
+              <td><code><%= instance["identifier"] %></code></td>
+              <td><%= instance["created_at"].present? ? l(Time.zone.parse(instance["created_at"]), format: :long) : "—" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+<% end %>

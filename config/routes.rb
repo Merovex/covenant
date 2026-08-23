@@ -76,7 +76,13 @@ Rails.application.routes.draw do
   # id, like posts). A ticket threads its replies underneath, mirroring a post
   # and its comments; the reply composer posts an outbound agent message.
   resources :customers
-  resources :licenses
+  resources :licenses do
+    # Pull every key from Lemon Squeezy now (the hourly job's manual twin).
+    collection { post :sync }
+  end
+  # Live "which machines is this key on" panel, lazy-loaded into the license
+  # page so LS being slow never blocks the page itself (:id = Record id).
+  get "licenses/:id/activations" => "licenses/activations#show", as: :license_activations
   resources :tickets do
     scope module: :tickets do
       resources :replies, only: %i[create]
@@ -88,6 +94,10 @@ Rails.application.routes.draw do
   # pulls on demand.
   get "downloads" => "downloads#show", as: :downloads
   post "downloads/refresh" => "downloads#refresh", as: :refresh_downloads
+
+  # Lemon Squeezy → us: license_key_created/updated events (HMAC-signed), so a
+  # sale or a disable shows up in the support desk within seconds.
+  post "webhooks/lemon_squeezy" => "webhooks/lemon_squeezy#create", as: :lemon_squeezy_webhook
 
   # Staff-only note on any notable (Ticket/License Record or Customer). The
   # target rides in the form as a signed GlobalID, so one route serves all.
