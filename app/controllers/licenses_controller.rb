@@ -4,6 +4,7 @@
 class LicensesController < ApplicationController
   include LicenseScoped
   skip_before_action :set_record, only: %i[index new create sync]
+  before_action :require_external, only: :revoke
   before_action -> { authorize! License, to: :manage }
   # Mirrored licenses are edited in Lemon Squeezy; a local edit would just be
   # overwritten by the next sync.
@@ -63,7 +64,21 @@ class LicensesController < ApplicationController
     redirect_to licenses_path, notice: "License moved to trash."
   end
 
+  # Disable the key in Lemon Squeezy (the app stops accepting it); LS's answer
+  # is mirrored immediately. Only mirrored licenses — a hand-entered one is
+  # revoked by editing its status.
+  def revoke
+    License::LemonSqueezy.disable!(@license.external_id)
+    redirect_back_or_to license_path(@record), notice: "License revoked in Lemon Squeezy."
+  rescue => e
+    redirect_back_or_to license_path(@record), alert: "Couldn't revoke in Lemon Squeezy: #{e.message}"
+  end
+
   private
+    def require_external
+      render_not_found unless @license.external?
+    end
+
     def refuse_external_edit
       return unless @license.external?
 

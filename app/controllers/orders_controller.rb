@@ -3,7 +3,7 @@
 # freshly signed URL, since the ones LS hands out expire within hours.
 class OrdersController < ApplicationController
   before_action -> { authorize! Order, to: :manage }
-  before_action :set_order, only: %i[show receipt]
+  before_action :set_order, only: %i[show receipt refund]
 
   def index
     scope = Order.includes(:customer).newest_first
@@ -25,6 +25,14 @@ class OrdersController < ApplicationController
     redirect_to url, allow_other_host: true
   rescue => e
     redirect_to order_path(@order), alert: "Couldn't fetch the receipt: #{e.message}"
+  end
+
+  # Full refund via Lemon Squeezy; LS's answer is mirrored immediately.
+  def refund
+    License::LemonSqueezy.refund!(@order.external_id)
+    redirect_back_or_to order_path(@order), notice: "Order #{@order.display_number} refunded in Lemon Squeezy."
+  rescue => e
+    redirect_back_or_to order_path(@order), alert: "Couldn't refund in Lemon Squeezy: #{e.message}"
   end
 
   private

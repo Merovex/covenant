@@ -98,6 +98,24 @@ module License::LemonSqueezy
     end
   end
 
+  # -- writes back to LS (the two support actions the desk offers) ----------
+
+  # Disable a key in LS ("Revoke" on the desk). LS answers with the updated
+  # key, which is mirrored straight away so the page reflects it without
+  # waiting for the webhook. Returns the License upsert result.
+  def disable!(external_id)
+    body = { data: { type: "license-keys", id: external_id.to_s, attributes: { disabled: true } } }
+    upsert(request(Net::HTTP::Patch, "license-keys/#{external_id}", body: body).fetch("data"))
+  end
+
+  # Refund an order in LS — full refund unless `amount` (cents) is given.
+  # Mirrors LS's answer straight away. Returns the Order upsert result.
+  def refund!(external_id, amount: nil)
+    attributes = amount ? { amount: amount } : {}
+    body = { data: { type: "orders", id: external_id.to_s, attributes: attributes } }
+    upsert_order(request(Net::HTTP::Post, "orders/#{external_id}/refund", body: body).fetch("data"))
+  end
+
   # A fresh signed receipt link for an order — LS signs them with a short
   # expiry, so the stored one goes stale; ask again when someone clicks.
   def receipt_url(external_id)
@@ -221,13 +239,22 @@ module License::LemonSqueezy
   end
 
   def get(path, params = {})
+    request(Net::HTTP::Get, path, params: params)
+  end
+
+  # One JSON:API round trip. `body` (a Hash) is sent as JSON for writes.
+  def request(verb, path, params: {}, body: nil)
     raise "Lemon Squeezy API key is not configured" unless configured?
 
     uri = URI("#{API}/#{path}")
     uri.query = URI.encode_www_form(params) if params.any?
-    request = Net::HTTP::Get.new(uri)
+    request = verb.new(uri)
     request["Accept"] = "application/vnd.api+json"
     request["Authorization"] = "Bearer #{api_key}"
+    if body
+      request["Content-Type"] = "application/vnd.api+json"
+      request.body = body.to_json
+    end
 
     response = Net::HTTP.start(uri.hostname, uri.port,
       use_ssl: true, open_timeout: 5, read_timeout: 15) { |http| http.request(request) }

@@ -15,10 +15,20 @@ class CustomersController < ApplicationController
     @customers = scope
   end
 
+  # The customer's page: a glance row (license state, activations, money
+  # paid, open tickets) over Tickets / Licenses / Orders panels. Tickets lead —
+  # this is a support desk, and the question is usually "what's going on with
+  # this person right now".
   def show
-    @licenses = @customer.licenses.merge(License.current).includes(:record)
-    @tickets = @customer.tickets.merge(Ticket.current).includes(:record)
+    @licenses = @customer.licenses.merge(License.current).includes(:record).order(:product)
+    @tickets = @customer.tickets.merge(Ticket.current).includes(:record, :rich_text_content)
+      .order(Arel.sql("tickets.record_id DESC"))
     @orders = @customer.orders.newest_first
+    @reply_counts = Record.active.replies.where(parent_id: @tickets.map(&:record_id)).group(:parent_id).count
+    @open_tickets = @tickets.count { |t| t.status.in?(%w[open pending on_hold]) }
+    @glance = glance
+    @last_activity = [ @customer.updated_at, *@tickets.map { |t| t.record.updated_at },
+      *@licenses.map { |l| l.record.updated_at }, *@orders.map(&:updated_at) ].compact.max
   end
 
   def new
@@ -55,6 +65,25 @@ class CustomersController < ApplicationController
   end
 
   private
+    # The four at-a-glance figures. License = the best current status across
+    # their licenses (active beats suspended beats expired/revoked); Paid = net
+    # takings across their live orders, by currency.
+    def glance
+      status = %w[active suspended expired revoked].find { |s| @licenses.any? { |l| l.status == s } }
+      external = @licenses.select(&:external?)
+      used = external.sum(&:instances_count)
+      limit = external.any? { |l| l.activation_limit.nil? } ? nil : external.sum { |l| l.activation_limit.to_i }
+      paid = @orders.select(&:live?).select { |o| o.paid? || o.refunded? }
+        .group_by(&:currency).map { |currency, orders| helpers.money(orders.sum(&:net_total), currency) }
+
+      {
+        "License"      => status&.titleize || "None",
+        "Activations"  => external.any? ? "#{used} / #{limit || "∞"}" : "—",
+        "Paid"         => paid.presence&.join(" · ") || helpers.money(0),
+        "Open tickets" => @open_tickets.zero? ? "None" : @open_tickets
+      }
+    end
+
     def set_customer
       @customer = Customer.find(params[:id])
     end

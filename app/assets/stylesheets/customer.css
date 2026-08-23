@@ -1,0 +1,36 @@
+/*
+ * Customer page — the records row under the glance cards: a segmented
+ * control (.button-group driven by the tabs controller) on the left, the
+ * last-activity note on the right, panels below.
+ * Structure (BEM): .customer__lead; .customer__tabs > .customer__tabs-head; .customer__empty
+ */
+@layer components {
+  /* Email + company on the left, the Email-customer action on the right. */
+  .customer__lead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--u-pad);
+  }
+
+  .customer__tabs { margin-block-start: var(--size-6); }
+
+  .customer__tabs-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--u-pad);
+    padding-block-end: var(--u-pad);
+    border-block-end: var(--border-size-1) solid var(--line);
+  }
+
+  /* Empty panel: a quiet card with the one thing you can do about it. */
+  .customer__empty {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--u-pad);
+  }
+}

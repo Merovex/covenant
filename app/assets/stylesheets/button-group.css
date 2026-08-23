@@ -28,7 +28,9 @@
     white-space: nowrap;
   }
   .button-group__btn:hover { color: var(--ink); }
-  .button-group__btn.is-active {
+  /* Active segment — by class, or by ARIA state when the tabs controller drives it. */
+  .button-group__btn.is-active,
+  .button-group__btn[aria-selected="true"] {
     background: var(--canvas);
     font-weight: var(--font-weight-6);
     box-shadow: var(--shadow-1);

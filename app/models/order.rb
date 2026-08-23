@@ -14,6 +14,13 @@ class Order < ApplicationRecord
   # Real money only: test-mode orders are mirrored (so a test key's license
   # still has its order) but never counted.
   scope :live, -> { where(test_mode: false) }
+
+  def live? = !test_mode?
+
+  # Still refundable in LS: money was taken and not all of it given back.
+  def refundable?
+    (paid? || refunded?) && refunded_amount < total
+  end
   scope :newest_first, -> { order(ordered_at: :desc, id: :desc) }
 
   # Licenses minted by this order — current versions only, joined on the LS

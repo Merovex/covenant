@@ -2,6 +2,13 @@
 
 Append-only. Newest first. Format defined in [[CLAUDE]] (`CLAUDE.md`).
 
+## [2026-08-23] build | Customer page relaid out — glance row, Tickets-first segmented panels, LS write-backs
+- **Layout** (per the mockup; existing components, no new visual language): `perma-header` name + email/company with **Email customer** (→ new ticket for them) on the right; four glance cards reusing `dashboard/_stat` (License best-status, Activations used/limit across LS keys, Paid = net live takings by currency, Open tickets); the internal note; then a **`.button-group` segmented control driven by the `tabs` Stimulus controller** — **Tickets · Licenses · Orders** with counts, Tickets selected first — and "Last activity …" on the right (`.customer__tabs-head`). Panels: tickets (`tickets/row` + reply counts, empty card with "Open one"), licenses (key in `<code>`, "2 of ∞ activations · issued with order #…", actions **Copy key** (clipboard controller) / **Revoke**), orders (total, refunded, age; actions **Receipt** / **Refund**). New `customer.css`; `.list__actions` cluster in `list.css`; `.button-group__btn[aria-selected=true]` styled active.
+- **Write-backs to LS** (the first): `License::LemonSqueezy.disable!` (`PATCH /v1/license-keys/:id` `disabled: true`) behind `POST /licenses/:id/revoke` (mirrored licenses only; 404 otherwise), `refund!` (`POST /v1/orders/:id/refund`, full) behind `POST /orders/:id/refund` (`Order#refundable?`). Both mirror LS's response immediately and `redirect_back`. `get` refactored onto a generic `request(verb, path, params:, body:)`.
+- **Tests**: `CustomersPageTest` (+6) and write-back unit tests (+2); suite 266 green. Screenshot-checked in headless Chromium.
+- pages touched: [[0011-lemon-squeezy-license-mirror]], [[log]]
+- refs: `app/views/customers/show.html.erb`, `app/controllers/customers_controller.rb`, `app/assets/stylesheets/customer.css`, `app/models/license/lemon_squeezy.rb`
+
 ## [2026-08-23] build | Lemon Squeezy orders — mirrored Order model, /orders, revenue, receipts
 - **Why**: the key only carried an `order_id`; support needs amount paid, refund state, variant, and the receipt. Addendum on [[0011-lemon-squeezy-license-mirror]].
 - **`Order`** (plain table, `db/migrate/20260823130000_create_orders.rb`): LS id unique-indexed, `customer_id` FK, order number/identifier, status enum (pending/failed/paid/refunded), `refunded`/`refunded_at`, cents money (`subtotal`, `discount_total`, `tax`, `total`, `refunded_amount`) + `currency` + `total_formatted`, product/variant name, `test_mode`, `ordered_at`. **No receipt URL stored** — LS re-signs it per fetch (broke idempotency); `GET /orders/:id/receipt` fetches a fresh one and redirects.

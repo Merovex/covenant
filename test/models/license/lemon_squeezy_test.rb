@@ -186,4 +186,38 @@ class License::LemonSqueezyTest < ActiveSupport::TestCase
     assert_equal({ "USD" => 2800, "EUR" => 1500 }, Order.revenue(Time.utc(2026, 8, 1)..Time.utc(2026, 9, 1)))
     assert_equal({}, Order.revenue(Time.utc(2025, 1, 1)..Time.utc(2025, 2, 1)))
   end
+
+  # -- write-backs ---------------------------------------------------------
+
+  test "disable! PATCHes the key and mirrors LS's answer" do
+    License::LemonSqueezy.upsert(resource, products: PRODUCTS)
+    seen = nil
+    fake = ->(verb, path, params: {}, body: nil) do
+      seen = [ verb, path, body ]
+      { "data" => resource(status: "disabled", disabled: true) }
+    end
+
+    result = stubbing(License::LemonSqueezy, :product_names, PRODUCTS) do
+      stubbing(License::LemonSqueezy, :request, fake) { License::LemonSqueezy.disable!("1555330") }
+    end
+
+    assert_equal :updated, result
+    assert_equal [ Net::HTTP::Patch, "license-keys/1555330", { data: { type: "license-keys", id: "1555330", attributes: { disabled: true } } } ], seen
+    assert License.current.find_by!(external_id: "1555330").revoked?
+  end
+
+  test "refund! POSTs the refund and mirrors LS's answer" do
+    License::LemonSqueezy.upsert_order(order_resource)
+    seen = nil
+    fake = ->(verb, path, params: {}, body: nil) do
+      seen = [ verb, path, body ]
+      { "data" => order_resource(status: "refunded", refunded: true, refunded_amount: 2800) }
+    end
+
+    result = stubbing(License::LemonSqueezy, :request, fake) { License::LemonSqueezy.refund!("9284193") }
+
+    assert_equal :updated, result
+    assert_equal [ Net::HTTP::Post, "orders/9284193/refund", { data: { type: "orders", id: "9284193", attributes: {} } } ], seen
+    assert Order.find_by!(external_id: "9284193").refunded?
+  end
 end

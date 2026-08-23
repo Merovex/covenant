@@ -77,12 +77,17 @@ Rails.application.routes.draw do
   # and its comments; the reply composer posts an outbound agent message.
   resources :customers
   resources :licenses do
-    # Pull every key from Lemon Squeezy now (the hourly job's manual twin).
+    # Pull every key from Lemon Squeezy now (the daily job's manual twin).
     collection { post :sync }
+    # Disable a mirrored key in Lemon Squeezy (writes back; LS's answer is mirrored).
+    member { post :revoke }
   end
   # Orders mirrored from Lemon Squeezy — read-only; receipt bounces to LS.
   resources :orders, only: %i[index show] do
-    member { get :receipt }
+    member do
+      get :receipt
+      post :refund # full refund, written back to LS
+    end
   end
   # Live "which machines is this key on" panel, lazy-loaded into the license
   # page so LS being slow never blocks the page itself (:id = Record id).

@@ -95,6 +95,13 @@ refunded, where's the receipt*. So the same mirror now covers orders:
 - `ApplicationHelper#money(cents, currency)` — "$28.00" for USD, "28.00 EUR"
   otherwise.
 
+### Addendum — write-backs
+The desk now writes two things back to LS, both from the customer page's row
+actions: **Revoke** (`PATCH /v1/license-keys/:id` `disabled: true`, mirrored
+licenses only) and **Refund** (`POST /v1/orders/:id/refund`, full). Each
+mirrors LS's response at once, so the page is right before the webhook lands.
+Everything else stays read-only here.
+
 ## Consequences
 - Every LS change is a version on the spine — renewals, disables, new
   activations — so the license page's history is the audit trail, free.

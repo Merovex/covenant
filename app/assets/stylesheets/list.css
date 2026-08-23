@@ -47,6 +47,17 @@
   .list__action { position: relative; z-index: 1; }
   .list__item:has(.list__action) .list__body::after { inset-inline-end: 3.5rem; }
 
+  /* a cluster of small text-button actions at the row's end (customer page:
+     Copy key / Revoke, Receipt / Refund) — lifted above the stretched link */
+  .list__actions {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-shrink: 0;
+    gap: calc(var(--u-pad) / 2);
+    align-self: center;
+  }
+
   .list__titlerow {
     display: flex;
     align-items: center;

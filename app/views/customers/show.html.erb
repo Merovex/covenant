@@ -6,69 +6,131 @@
   <%= link_to "New ticket", new_ticket_path(customer_id: @customer.id), class: "menu__item", role: "menuitem" %>
   <hr class="menu__separator">
   <%= button_to "Delete customer", customer_path(@customer), method: :delete, class: "menu__item", role: "menuitem",
-        form: { data: { turbo_confirm: "Delete #{@customer.name}? Only possible with no licenses or tickets." } } %>
+        form: { data: { turbo_confirm: "Delete #{@customer.name}? Only possible with no licenses, orders or tickets." } } %>
 <% end %>
 
 <header class="perma-header">
   <h1 class="perma-header__title"><%= @customer.name %></h1>
-  <p class="perma-header__content u-text-muted">
-    <%= mail_to @customer.email %>
-    <% if @customer.company.present? %> · <span class="u-text-strong"><%= @customer.company %></span><% end %>
-  </p>
+  <div class="perma-header__content customer__lead">
+    <p class="u-text-muted">
+      <%= mail_to @customer.email %>
+      <% if @customer.company.present? %> · <span class="u-text-strong"><%= @customer.company %></span><% end %>
+    </p>
+    <nav class="perma-header__toolbar" aria-label="Actions">
+      <%# Opens a ticket addressed to them — the form's "Open & send to customer" emails it. %>
+      <%= link_to "Email customer", new_ticket_path(customer_id: @customer.id), class: "button button--primary button--small" %>
+    </nav>
+  </div>
 </header>
+
+<%# At a glance: the four things an agent wants before reading anything. %>
+<div class="dashboard__stats u-margin-block-end">
+  <% @glance.each do |label, value| %>
+    <%= render "dashboard/stat", label: label, count: value %>
+  <% end %>
+</div>
 
 <%= render "shared/note", notable: @customer %>
 
-<section class="u-stack">
-  <h2 class="u-text-strong">Licenses</h2>
-  <% if @licenses.any? %>
-    <ul class="list">
-      <% @licenses.each do |license| %>
-        <li class="list__item">
-          <%= link_to license_path(license.record), class: "list__body" do %>
-            <span class="list__titlerow">
-              <span class="list__title"><%= license.product %></span>
-              <span class="status-pill status-pill--<%= license.status %>"><%= license.status %></span>
-            </span>
-            <span class="list__meta"><span class="list__byline"><%= license.license_key %></span> <%= license.external? ? "#{license.activations} activations" : pluralize(license.seats, "seat") %></span>
-          <% end %>
-        </li>
+<div class="tabs customer__tabs" data-controller="tabs">
+  <div class="customer__tabs-head">
+    <div class="button-group" role="tablist" aria-label="Customer records" data-action="keydown->tabs#key">
+      <% { "Tickets" => @tickets.size, "Licenses" => @licenses.size, "Orders" => @orders.size }.each_with_index do |(label, count), i| %>
+        <button type="button" class="button-group__btn" role="tab" id="customer-tab-<%= label.downcase %>"
+                aria-controls="customer-panel-<%= label.downcase %>" aria-selected="<%= i.zero? %>"
+                data-tabs-target="tab" data-action="click->tabs#show">
+          <%= label %> <span class="u-text-muted"><%= count %></span>
+        </button>
       <% end %>
-    </ul>
-  <% else %>
-    <p class="u-text-muted">No licenses. <%= link_to "Add one", new_license_path(customer_id: @customer.id) %>.</p>
-  <% end %>
-</section>
+    </div>
+    <% if @last_activity %><span class="u-text-muted">Last activity <%= relative_time(@last_activity) %></span><% end %>
+  </div>
 
-<section class="u-stack u-margin-block-start">
-  <h2 class="u-text-strong">Orders</h2>
-  <% if @orders.any? %>
-    <ul class="list">
-      <% @orders.each do |order| %>
-        <%= render "orders/row", order: order, show_customer: false %>
-      <% end %>
-    </ul>
-  <% else %>
-    <p class="u-text-muted">No orders from Lemon Squeezy.</p>
-  <% end %>
-</section>
+  <section class="tabs__panel" role="tabpanel" id="customer-panel-tickets" aria-labelledby="customer-tab-tickets" data-tabs-target="panel">
+    <% if @tickets.any? %>
+      <ul class="list">
+        <% @tickets.each do |ticket| %>
+          <%= render "tickets/row", ticket: ticket, reply_count: @reply_counts[ticket.record_id].to_i %>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="card"><div class="card__body customer__empty">
+        <span class="u-text-muted">No tickets on record.</span>
+        <%= link_to "Open one", new_ticket_path(customer_id: @customer.id), class: "button button--small" %>
+      </div></div>
+    <% end %>
+  </section>
 
-<section class="u-stack u-margin-block-start">
-  <h2 class="u-text-strong">Tickets</h2>
-  <% if @tickets.any? %>
-    <ul class="list">
-      <% @tickets.each do |ticket| %>
-        <li class="list__item">
-          <%= link_to ticket_path(ticket.record), class: "list__body" do %>
-            <span class="list__titlerow">
-              <span class="list__title"><%= ticket.title %></span>
-              <span class="status-pill status-pill--<%= ticket.status %>"><%= ticket.status.humanize %></span>
-            </span>
-          <% end %>
-        </li>
-      <% end %>
-    </ul>
-  <% else %>
-    <p class="u-text-muted">No tickets. <%= link_to "Open one", new_ticket_path(customer_id: @customer.id) %>.</p>
-  <% end %>
-</section>
+  <section class="tabs__panel" role="tabpanel" id="customer-panel-licenses" aria-labelledby="customer-tab-licenses" data-tabs-target="panel" hidden>
+    <% if @licenses.any? %>
+      <ul class="list">
+        <% @licenses.each do |license| %>
+          <li class="list__item">
+            <%= link_to license_path(license.record), class: "list__body" do %>
+              <span class="list__titlerow">
+                <span class="list__title"><%= license.product %></span>
+                <span class="status-pill status-pill--<%= license.status %>"><%= license.status %></span>
+              </span>
+              <span class="list__meta"><code><%= license.license_key %></code></span>
+              <span class="list__meta u-text-muted">
+                <% if license.external? %>
+                  <%= license.instances_count %> of <%= license.activation_limit || "∞" %> activations
+                  <% if (order = license.order) %> · issued with order <%= order.display_number %><% end %>
+                <% else %>
+                  <%= pluralize(license.seats, "seat") %> · entered by hand
+                <% end %>
+                <% if license.expires_at %> · expires <%= l(license.expires_at.to_date, format: :long) %><% end %>
+              </span>
+            <% end %>
+            <div class="list__actions">
+              <button type="button" class="button button--small" data-controller="clipboard"
+                      data-action="clipboard#copy" data-clipboard-text-value="<%= license.license_key %>">Copy key</button>
+              <% if license.external? && license.active? %>
+                <%= button_to "Revoke", revoke_license_path(license.record), class: "button button--small",
+                      form: { data: { turbo_confirm: "Revoke this key in Lemon Squeezy? The app will stop accepting it." } } %>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="card"><div class="card__body customer__empty">
+        <span class="u-text-muted">No licenses on record.</span>
+        <%= link_to "Add one", new_license_path(customer_id: @customer.id), class: "button button--small" %>
+      </div></div>
+    <% end %>
+  </section>
+
+  <section class="tabs__panel" role="tabpanel" id="customer-panel-orders" aria-labelledby="customer-tab-orders" data-tabs-target="panel" hidden>
+    <% if @orders.any? %>
+      <ul class="list">
+        <% @orders.each do |order| %>
+          <li class="list__item">
+            <%= link_to order_path(order), class: "list__body" do %>
+              <span class="list__titlerow">
+                <span class="list__title"><%= order.display_number %> · <%= order.item_name %></span>
+                <span class="status-pill status-pill--<%= order.refunded? ? "refunded" : order.status %>"><%= order.refunded? ? "Refunded" : order.status %></span>
+                <% if order.test_mode? %><span class="status-pill">Test</span><% end %>
+              </span>
+              <span class="list__meta u-text-muted">
+                <%= money(order.total, order.currency) %><% if order.refunded_amount.positive? %> (<%= money(order.refunded_amount, order.currency) %> refunded)<% end %>
+                · <%= relative_time(order.ordered_at) %>
+              </span>
+            <% end %>
+            <div class="list__actions">
+              <%= link_to "Receipt", receipt_order_path(order), class: "button button--small", target: "_blank", rel: "noopener" %>
+              <% if order.refundable? %>
+                <%= button_to "Refund", refund_order_path(order), class: "button button--small",
+                      form: { data: { turbo_confirm: "Refund #{money(order.total - order.refunded_amount, order.currency)} for order #{order.display_number} in Lemon Squeezy?" } } %>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="card"><div class="card__body customer__empty">
+        <span class="u-text-muted">No orders from Lemon Squeezy.</span>
+      </div></div>
+    <% end %>
+  </section>
+</div>
