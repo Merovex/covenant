@@ -1,0 +1,47 @@
+<% content_for :title, "Order #{@order.display_number} — Covenant" %>
+
+<%= render "shared/canvas_head", crumbs: [["Orders", orders_path], [@order.display_number, nil]] do %>
+  <%= link_to "View receipt on Lemon Squeezy", receipt_order_path(@order), class: "menu__item", role: "menuitem", target: "_blank", rel: "noopener" %>
+<% end %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Order <%= @order.display_number %></h1>
+  <p class="perma-header__content u-text-muted">
+    <span class="status-pill status-pill--<%= @order.refunded? ? "refunded" : @order.status %>"><%= @order.refunded? ? "Refunded" : @order.status %></span>
+    <% if @order.test_mode? %> <span class="status-pill">Test</span><% end %>
+    · <%= link_to @order.customer.display_name, customer_path(@order.customer) %>
+    · Mirrored from Lemon Squeezy
+  </p>
+</header>
+
+<dl class="u-stack">
+  <div><dt class="u-text-strong">Item</dt><dd><%= @order.item_name %></dd></div>
+  <div><dt class="u-text-strong">Total</dt><dd><%= money(@order.total, @order.currency) %>
+    <span class="u-text-muted">(subtotal <%= money(@order.subtotal, @order.currency) %><% if @order.discount_total.positive? %>, discount −<%= money(@order.discount_total, @order.currency) %><% end %>, tax <%= money(@order.tax, @order.currency) %>)</span></dd></div>
+  <% if @order.refunded? || @order.refunded_amount.positive? %>
+    <div><dt class="u-text-strong">Refunded</dt><dd><%= money(@order.refunded_amount, @order.currency) %><% if @order.refunded_at %> on <%= l(@order.refunded_at, format: :long) %><% end %></dd></div>
+  <% end %>
+  <div><dt class="u-text-strong">Placed</dt><dd><%= @order.ordered_at ? l(@order.ordered_at, format: :long) : "—" %></dd></div>
+  <div><dt class="u-text-strong">Lemon Squeezy</dt><dd>order #<%= @order.external_id %><% if @order.identifier %> · <code><%= @order.identifier %></code><% end %></dd></div>
+</dl>
+
+<section class="u-stack u-margin-block-start">
+  <h2 class="u-text-strong">Licenses from this order</h2>
+  <% if @licenses.any? %>
+    <ul class="list">
+      <% @licenses.each do |license| %>
+        <li class="list__item">
+          <%= link_to license_path(license.record), class: "list__body" do %>
+            <span class="list__titlerow">
+              <span class="list__title"><%= license.product %></span>
+              <span class="status-pill status-pill--<%= license.status %>"><%= license.status %></span>
+            </span>
+            <span class="list__meta"><span class="list__byline"><%= license.license_key %></span> <%= license.activations %> activations</span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="u-text-muted">No license key on this order.</p>
+  <% end %>
+</section>

@@ -1,0 +1,14 @@
+<%# locals: (order:, show_customer: true) %>
+<li class="list__item">
+  <%= link_to order_path(order), class: "list__body" do %>
+    <span class="list__titlerow">
+      <span class="list__title"><%= order.display_number %> · <%= order.item_name %></span>
+      <span class="status-pill status-pill--<%= order.refunded? ? "refunded" : order.status %>"><%= order.refunded? ? "Refunded" : order.status %></span>
+      <% if order.test_mode? %><span class="status-pill">Test</span><% end %>
+    </span>
+    <span class="list__meta">
+      <span class="list__byline"><%= money(order.total, order.currency) %><% if order.refunded_amount.positive? %> (<%= money(order.refunded_amount, order.currency) %> refunded)<% end %></span>
+      <% if show_customer %><%= order.customer.display_name %> · <% end %><%= relative_time(order.ordered_at) %>
+    </span>
+  <% end %>
+</li>

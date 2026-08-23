@@ -1,0 +1,29 @@
+<% content_for :title, "Orders — Covenant" %>
+
+<%= render "shared/canvas_head", crumbs: [["Orders", nil]] %>
+
+<header class="perma-header">
+  <h1 class="perma-header__title">Orders</h1>
+  <p class="perma-header__content u-text-muted">Mirrored from Lemon Squeezy; refunds and new sales arrive by webhook, the daily sync catches the rest.</p>
+</header>
+
+<nav class="u-cluster u-margin-block-end" aria-label="Filter">
+  <%= link_to "All (#{@counts[:all]})", orders_path,
+        class: "button button--small #{@refunded ? "button--ghost" : "button--primary"}" %>
+  <%= link_to "Refunded (#{@counts[:refunded]})", orders_path(refunded: 1),
+        class: "button button--small #{@refunded ? "button--primary" : "button--ghost"}" %>
+</nav>
+
+<% if @orders.any? %>
+  <ul class="list">
+    <% @orders.each do |order| %>
+      <%= render "orders/row", order: order %>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="empty">
+    <span class="empty__icon"><%= inline_svg_tag "lucide/receipt.svg", class: "lucide", size: "40px" %></span>
+    <p class="empty__title">No orders yet</p>
+    <p class="empty__text">Sales in Lemon Squeezy will show up here.</p>
+  </div>
+<% end %>
