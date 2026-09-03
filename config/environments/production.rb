@@ -69,6 +69,14 @@ Rails.application.configure do
   # in mailers (magic-links) and secure cookies.
   config.assume_ssl = true
 
+  # Vulnerability scanners send a forged Client-Ip header alongside their real
+  # X-Forwarded-For, which makes RemoteIp raise IpSpoofAttackError (a 500 + a
+  # Honeybadger alert) on requests that would otherwise just 404. The check only
+  # compares two client-supplied headers, so it adds no protection here: behind
+  # kamal-proxy the appended X-Forwarded-For hop always wins, and remote_ip
+  # still resolves to the true client with the check off.
+  config.action_dispatch.ip_spoofing_check = false
+
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
 
